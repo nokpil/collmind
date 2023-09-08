@@ -1,0 +1,653 @@
+%% Template for a preprint Letter or Article for submission
+%% to the journal Nature.
+%% Written by Peter Czoschke, 26 February 2004
+%%
+
+\documentclass{nature}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\newcommand{\RN}[1]{%
+  \textup{\uppercase\expandafter{\romannumeral#1}}%
+}
+%% make sure you have the nature.cls and naturemag.bst files where
+%% LaTeX can find them
+
+\makeatletter
+\let\saved@includegraphics\includegraphics
+\AtBeginDocument{\let\includegraphics\saved@includegraphics}
+\renewenvironment*{figure}{\@float{figure}}{\end@float}
+\makeatother
+
+\title{Social learning spontaneously emerges by searching optimal heuristics with deep reinforcement learning}
+
+%% Notice placement of commas and superscripts and use of &
+%% in the author list
+
+\author{Seungwoong Ha$^{1}$, Hawoong Jeong$^{1,2}$}
+
+\begin{document}
+
+\maketitle
+
+\begin{affiliations}
+ \item Department of Physics, Korea Advanced Institute of Science and Technology, Daejeon 34141, Korea
+ \item Center for Complex Systems, Korea Advanced Institute of Science and Technology, Daejeon 34141, Korea
+\end{affiliations}
+
+\begin{abstract}
+  How have individuals of social animals in nature evolved to learn from each other, and what would be the optimal strategy for such learning in a specific environment? Here, we address both problems by employing a deep reinforcement learning model to optimize the social learning strategies (SLSs) of agents in a cooperative game in a multi-dimensional landscape. Throughout the training for maximizing the overall payoff, we find that the agent \textit{spontaneously learns} various concepts of social learning, such as copying, focusing on frequent and well-performing neighbors, self-comparison, long-term cooperation between agents, and the importance of balancing between individual and social learning, without any explicit guidance or prior knowledge about the system. The SLS from a fully trained agent \textit{outperforms} all of the traditional, baseline SLSs in terms of mean payoff. We demonstrate the superior performance of the reinforcement learning agent in various environments, including temporally changing environments and real social networks, which also verifies the adaptability of our framework to different social settings.
+\end{abstract}
+
+\section{Introduction}
+
+Learning is one of the most salient properties that emerge from flourishing species in nature. Particularly, learning from other members in a group generally leads to a collective success by exploiting verified information \cite{feldman1984cultural, feldman1996individual, kendal2018social}, which distinguishes social learning from asocial, individual learning where information directly comes from exploration through the environment. While social learning is intuitively beneficial at first sight, research over the past several decades has consistently proven that naive social imitation is not inherently adaptive and often fails to achieve good group-level performance \cite{boyd1988culture, laland2004social, hashimoto2010new, rendell2011cognitive, mason2012collaborative, barkoczi2016social, todd2020interaction}. Instead, current theory suggests that, to properly determine how to learn from others one should employ a selective heuristics called a social learning strategy (SLS)  \cite{laland2004social}, which governs the internal rules for choosing the proper time, subject, and methods to engage both social and individual learning. SLSs significantly contribute to building social norms and driving cultural evolution in society, and thus the understanding of SLSs provides fruitful insight to policymakers and group leaders \cite{toyokawa2019social, almaatouq2020adaptive}. Throughout the history of research into SLSs, two fundamental questions have yet to be fully answered: how it naturally emerged for social beings in nature, and what is the optimal strategy for the given environment.
+
+Many studies attribute the emergence and evolution of social learning to natural selection \cite{boyd1988culture,laland2004social, macy1996natural, perreault2012bayesian}, while mostly explaining the origin of social learning in a retrospective manner. Some evidence has shown that reinforcement learning could lead to the emergence of social learning \cite{dawson2013learning, lindstrom2015mechanisms}, but a general framework for inducing complex SLSs is still lacking. On the other hand, numerous attempts to search for the best SLS have faced another set of problems. Previous studies mainly focused on performing a comparison or organizing a tournament between a given set of heuristics \cite{rendell2010copy,csaszar2010much,mason2012collaborative, fontanari2015exploring, barkoczi2016social, barkoczi2016collective}, which have been either reported from empirical societies or proposed by insights from social observations without a rigorous theoretical basis or optimization scheme. Although a number of computational models and theoretical approaches attempted to formalize the long-term behavior of SLSs \cite{aoki2005emergence,lopes2009computational, aoki2010evolution, giraldeau2018social}, optimizing general SLSs even in a simple environment is an extremely challenging task due to the inherent multifaceted complexity, such as from an exponentially large search space, dependence on interaction networks, non-differentiable payoff, and stochasticity.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=1\linewidth]{Fig1}
+  \caption{(A) NK model on a social network. At every time step, each person randomly observes a certain number of people among their neighbors and applies a social learning strategy (SLS) to maximize their individual time-average payoff. The solution is represented as an $N$-dimensional binary vector, where its payoff is given by the NK landscape. (B) Available information and various mechanisms for SLSs. The conventional strategies include frequently observed and proposed heuristics, such as best imitator and conformist strategies, while we present a reinforcement learning approach to find the optimal SLS for the given environment. The agent tries to maximize the time-average payoff it receives from the NK landscape as a result of its action of producing probabilities for a new solution. State correction after the sampled solution is omitted for visualization.}\label{fig:1}
+\end{figure*}
+
+In this work, we employ a modern computational model to tackle both of the central questions---namely, regarding the natural emergence of social learning and finding the optimal strategy. By constructing a reinforcement learning (RL) framework with a neural network tailored to SLSs, we train a model-free agent to search for the multi-dimensional policy that yields the maximum average payoff during its social evolution. We show that social learning in a cooperative game can naturally emerge through RL from a simple reward, without any selective pressure or explicit knowledge of the information the agent receives from interactions. The most intriguing point is that the agent progressively discovers significant notions of social learning throughout the training, including the concept of copying other solutions based on their frequency or payoff, stochastic copying, individual learning, self-comparison, and even the delicate interplay between exploration and exploitation, which yields a long-term cooperation between agents in a non-greedy manner. The optimized SLS from the trained agent outperforms all of the baseline SLSs in various environmental settings, including real social networks.
+
+To search heuristics systematically without brute force, metaheuristics such as genetic algorithms \cite{sivanandam2008genetic} and simulated annealing \cite{van1987simulated} are widely used. Recently, fueled by the rapid advances in machine learning, many researchers have started to employ RL to seek heuristics \cite{runarsson2011learning, bianchi2015transferring, fiderer2021neural, yonetani2021path, yaman2021meta}. In particular, RL has shown its strength in constructing computational models of the spatiotemporal dynamics of human cooperation and anthropological problems \cite{vinitsky2021learning, ndousse2021emergent, mckee2021deep, koster2022spurious}. Here, we model the problem of social learning by considering a group of individuals that iteratively search for better solutions in a rugged, high-dimensional landscape \cite{csaszar2010much, hashimoto2010new, fontanari2015exploring, barkoczi2016social, giannoccaro2018team, todd2020interaction}, where our goal is to find the optimal heuristic for individuals that yields the maximum average payoff when shared with its group (Fig. 1A). In this paper, the rugged landscape takes the form of an NK model \cite{kauffman1987towards}, see Methods for further details.
+
+We formulate SLSs as intrinsic algorithms for an individual in a group who receives information from their neighbors and yields the probability of their future solution for every time step. The collective information comprises solutions and payoffs as well as additional features such as rankings and frequencies, but these are provided without any indication; the agent is initially clueless about which part of the information is a payoff or solution. This stochastic formulation can encompass both social learning and individual learning in a unified framework in multi-dimensional settings (Fig. 1B). One notable point is that the algorithms should be invariant to permutations of the neighbors' information, since generally there is no specific order of neighbors. We designed the neural architecture to properly handle this characteristic by adopting a permutation-invariant encoder for the policy network (see Methods for further details).
+
+As a baseline, we consider the following strategies from previous literature \cite{laland2004social, barkoczi2016social,barkoczi2016collective}. Best imitator (BI) always copies the solution of the best-performing neighbor, conformist (CF) always copies the most frequent (or major) solution among the neighbors, random imitator (RI) chooses random neighbors to copy, and pure individualist (PI) does not engage in any form of social learning (Fig. 1B). For SLSs with individual learning, single-bit flipping (-I), probabilistic flipping (-P), or random flipping (-R) are applied to the current solution (see Methods for further details).
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=1\linewidth]{Fig2}
+  \caption{(A) BI test template solution vectors and representative strategies for the face colors of the voxels. (B) Three-dimensional (3D) strategy diagram (left) and two-dimensional (2D) output diagram (right) for the BI test. The model results from the test template with score $p_1\leq p_2\leq p_3$ are shown. In the 3D diagram, each voxel's location represents its neighbor's score $(p_1, p_2, p_3)$ and its face color indicates the distances between the output probability and identified strategies. The 2D output diagram directly shows the output probability of producing $1$ for each $N$ dimension. For visualization, in what follows, the voxels in the 3D strategy diagrams are drawn by taking every 5th coordinate value in each dimension. (C) CF test template solution vectors and representative strategies (left) and 2D output diagram (right) employing the test template with $p_1\leq p_2=p_3$ to accuratley detect the true CF strategy.}\label{fig:2}
+\end{figure*}
+
+Since the strategies are formulated as high-dimensional functions, understanding and visualizing the functional meaning of a trained neural network is not a simple task. Here, similar to controlled experiments in psychology, we inspect the strategy of the trained RL agent by isolating it from the network and observe the solution yielded by the policy network using a given test template. We test the similarity of the given model output to two representative SLSs, i.e., BI and CF strategies. The BI test template (Fig. 2A) consists of a series of fixed solution vectors and tunable payoffs, $0 \leq p_0 \leq p_{\text{max}}=100$ for the learner itself and $0 \leq p_3 \leq p_2 \leq p_1 \leq p_{\text{max}}$ for the neighbors in decreasing order of payoff. Since the proper heuristics should only depend on the payoff and not on the form of the solution vector itself, we can investigate the nature of the SLSs by changing the payoffs $(p_0, p_1, p_2, p_3)$ and observing the output probabilities. For instance, we can expect that the BI-I strategy will imitate the solution of $p_1$ if $p_1 > p_0$ and perform individual learning otherwise, regardless of $p_2$ and $p_3$. The CF test template (Fig. 2C) is constructed in a similar manner, but in this case, two of the solutions are the same with a low payoff ($p_1\leq p_2=p_3$) to precisely discern whether the agent follows the major solution even if it is worse than the other solution. For both tests, we draw a two-dimensional (2D) output diagram from $(p_0, 0, 0, 0)$ to $(p_0, 100, 100, 100)$ that satisfies the respective payoff conditions ($176,581$ pairs for the BI test and $5,050$ pairs for the CF test). 
+
+For visualization, in Fig. 2B we depict the response of these SLSs as a three-dimensional (3D) voxel plot for a fixed $p_0$, where each voxel is located at $(p_3, p_2, p_1)$ with a face color $(r, g, b, a)$. Each RGB color component represents the distance between the given strategy and the specific solution, as visualized in Fig. 2A, and the opacity $a$ depends on the minimum distances among all of the solutions (see Methods for details). With this color scheme, the voxel shows PI-R as light gray (low opacity, hence not close to any of the given solutions), PI-I as translucent red (close to the self solution but with some randomness), and BI as vivid blue (identical to the best solution). This type of 3D strategy diagram, along with the 2D output diagram, enables us to investigate the qualitative characteristics of the agent's multi-dimensional strategy that could not be easily comprehended otherwise.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=1\linewidth]{Fig3}
+  \caption{(A) Mean payoff and (B) average mean payoff over time of the SLS from reinforcement learning (RL) and various baseline SLSs (BI, BI-I, BI-P, BI-R, CF, CF-I, CF-P, CF-R, PI-I, PI-P, PI-R, RI). Here, the RL agent ($83.03$) surpasses the best-performing baseline, BI-R ($77.54$), as indicated with the dotted line in (B). Error bars show $\pm$5 standard error of the mean. (C) Average mean payoff and entropy of the model output during $5,700$ training epochs. The bold lines show the exponential moving average with a smoothing factor of $0.99$. (D) 3D strategy diagrams and 2D output diagrams for the BI test and the CF test from the model with training epochs of $1,000$, $2,000$, $3,000$, and $4,500$, each representing $4$ distinct stages of learning dynamics. Below the plots, we draw conceptual diagrams of the important lessons that the agent learned as the agent passes through to the next stage. The model is trained on a fully connected network of $100$ agents with NK$(15, 7)$ environments.}\label{fig:3}
+\end{figure*}
+
+\section{Result}
+
+\subsection{Default environment}
+
+In each epoch of the model training, $100$ agents with randomly assigned initial states perform the same SLS with $3$ randomly selected neighbors for $L=200$ time steps, and the reward for each agent is given as the payoff from the environment  according to each individual's new state. Even though this effectively trains a single model with a group of self-copied agents, we grant rewards \textit{individually}, and thus the model is optimized to maximize the expected payoff of each individual agent. Accordingly, from each individual's perspective, the solutions of all other agents and payoffs are regarded as surroundings, not a subject of optimization. We find that the model significantly struggles when a group-averaged reward is provided instead of an individual reward (see Supplementary Information for the result).
+
+We set our default environment as NK$(15,7)$ on the fully connected network, a similar setting as \cite{barkoczi2016social}, and train the agent by providing a new random landscape every epoch. This learning scheme is critical for guiding the agent to learn general heuristics rather than a single solution, as we find that the model output converges to a single optimal strategy when only a small number of fixed landscapes are given (see Supplementary Information for the results when $1$ and $10$ fixed environments are given to the agent). In this experiment, we train the agent for $5,700$ epochs, and the final model is used to measure the performance. Results reported are averaged across $5,000$ repetitions.
+
+First, we compare the performance of the SLS from RL with those of $12$ baseline SLSs by measuring the mean payoff from all agents of multiple trials and multiple initial landscapes, as shown in Fig. 3A and 3B (see Methods for details). Here, the average mean payoff corresponds to the area under the curves in Fig. 3A divided by the total time $L=200$, while the final mean payoff corresponds to the mean payoff value at the final time, $200$. The result clearly shows the dominant performance of the SLS from RL, exceeding the average payoff of all baselines by a noticeable margin.
+
+Obviously, this overwhelming performance of the trained agent is not inherent from the beginning; the agent initially performed poorly and gradually improved via learning, as visible in Fig. 3C. This strongly implies that the model somehow acquired the ability of social learning during the learning process. Another noteworthy point is that the agent's average mean payoff constantly increased while the entropy of the output distribution showed non-monotonic behavior during the training. The entropy of an output distribution directly assesses how \textit{confident} each dimension of a solution is; for binary cases, low entropy indicates that the probability of producing $1$ is close to either $0$ or $1$, rather than being indecisive and having a probability of $0.5$. Hence, the non-monotonic behavior of entropy indicates that the model converged into a certain solution, but the convergence was abandoned spontaneously and the strategy became more random again. To further investigate these peculiar learning dynamics, we plot a 3D strategy diagram and 2D output diagrams for both tests from the model after $1,000$, $2,000$, $3,000$, and $4,500$ training epochs, when $p_0 = 50$ (Fig. 3D). Critically, we find that the agent passes through four unique sub-optimal strategies during the learning process before it reaches the final strategy.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\linewidth]{Fig4}
+  \caption{(A) A 3D strategy diagram and 2D output diagram from the final model of the default environment with $p_0=50$. The zoomed-in inset shows the output probability from $p_2=p_3=0$ and $0\leq p_1 \leq 100$ to visualize the clear strategic boundary at $p_1=50$, highlighted with a white dotted line. (B, C) 3D strategy diagrams and corresponding insets with $p_0=30$ (B) and $p_0=70$ (C). The model is trained on a fully connected network of $100$ agents with NK$(15, 7)$ environments.}\label{fig:4}
+\end{figure}
+
+The model starts from a totally random strategy that produces a probability of near $0.5$ regardless of the input, similar to the PI-R strategy as expected. This is the stage where the agent does not utilize the information from its neighbors, i.e., it has no concept of social learning at all. The emergence of referencing others appears after gaining extensive experience from iterated games, in this case, around $1,500$ epochs (Stage 2 in Fig. 3D). Surprisingly, the first thing that the agent learns is to copy the major solution, similar to the CF strategy, which is accompanied by a drastic decline in entropy. Although the concept of 'copying the major solution' is generally not the best-performing, as reflected in the CF-based strategies in Fig. 3B, this concept can be easily captured by an agent since we provide the frequency of each solution as a feature. We speculate that passing through this sub-optimal strategy facilitates faster learning by providing additional options to copy and helping the agent learn the notion of copying much faster, similar to a recently reported phenomenon in artificial agents for social learning \cite{koster2022spurious}. This is further supported by a delay in the learning process when the frequency feature is not provided (see Supplementary Information for the result where no solution frequency is given). In Stage 2, the agent finds a connection between observed information and its behavior, which can be likened to the acquirement of neurophysiological circuits such as mirror neurons \cite{dickerson2017role, olsson2020neural}.
+
+After the concept of copying is well understood by the agent, the subject that is copied quickly transfers from the major solution to the best solution around $2,500$ epochs (Stage 3 in Fig. 3D). We find that the agent needs a far greater number of training epochs to reach the final strategy if it has to learn the payoff ranking by itself (see Supplementary Information for the result where the payoff ranking is not provided). After this subject switching, the agent gets confident with the strategy of 'copying the best solution', as shown in vivid blue in the 3D diagrams in the figure. The agent in this stage shows a similar strategy to the BI strategy with a small chance of flipping.
+
+The last stage of learning starts with a rapid increase in entropy after $3,000$ epochs (Stage 4 in Fig. 3D). This does not indicate that the model backslides to the very beginning, however; the agent clearly maintains the lessons from former experiences in some conditions while intentionally forgetting them in other conditions according to a specific threshold. The appearance of the translucent lower region of the 3D diagram and greenish stripes in the 2D output diagram from the model of $4,500$ epochs demonstrates such a transition visually. It turns out that the agent at this stage begins to compare the payoff of the best solution ($p_1$) to its own payoff ($p_0$) and begins to choose to employ a different strategy based on the comparison. By observing the final model's 3D strategy diagram and 2D output diagram for different $p_0$ (Fig. 4), it is evident that the agent performs a random search when $p_0 \geq p_1$ and imitates the best solution when $p_0 < p_1$. In this final stage, the agent exhibits every key aspect of the BI-R strategy, the best-performing baseline SLS in the environment.
+
+This remarkable transition is one of the key findings of our work. Note that from each individual's perspective, performing a totally random search gives a minuscule probability of finding a better solution (especially if the agent already achieved a high payoff), hence it cannot be properly incentivized by an optimization scheme without long-term planning. From stage 3 where every agent blindly copies others, our RL agent \textit{realizes} that no one, including itself, could achieve a better solution if nobody provides a new solution to the population pool. This leads the agent from an information scrounger to an information producer \cite{laland2004social} by abandoning some part of selfish social learning and developing individual learning which also benefits other agents. In stage 4, the agent finds the exact division between two learning schemes, achieving the most effective form of long-term cooperation. Also, we find that the agent here deliberately chooses to perform a totally random search (similar to ``-R'' individual learning) among the various forms of individual learning it may adopt. See Supplementary Information for the movie of 3D strategy diagrams throughout the full training, which exhibits various short-lived strategical notions such as 'copying the second-best' and individual learning that adopts randomness while preserves the current solution.
+
+Throughout this detailed analysis, we demonstrate both the variety of SLSs that can be expressed by our model and the capability of the RL framework for observing the transmission of behavior by social interactions. Note that we did not incentivize any social behaviors by explicitly providing the means or assigning specific rewards; rather, our framework provides only raw information from randomly chosen neighbors without any prior knowledge. By employing a model-free computational approach with neural networks, we show that diverse and complex social learning strategies in nature can spontaneously emerge from the simplest reward with sufficient social interactions.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=1\linewidth]{Fig5}
+  \caption{Trained model results from diverse environment settings compared to default. From left to right, each panel shows a conceptual diagram, mean payoff, average mean payoff over time, and 3D strategy diagram with 2D output diagrams for both BI and CF tests. (A) Results from a different underlying network. Instead of a complete network, agents are now connected in a modular network that is optimized to maximize the mean clustering coefficient (MaxMC). (B) Results from a temporally changing environment. Every $50$ time steps (hence $4$ times among $200$ time steps), the underlying NK landscape is randomly reassigned, and all of the scores are newly calculated based on the new landscape (L50R4). (C) Results from a smoother environment with a longer time span. The landscape becomes smoother with $K=3$, and the total time steps are increased to $400$ (K3L400). }\label{fig:5}
+\end{figure*}
+
+\subsection{Various different environments}
+
+One of the major advantages of the computational approach for social learning is that we can freely alter the characteristics of the given environment that reflects the various learning dynamics observed in the real world. In Fig. 5, we present the performance and strategies of the final models trained with three different environmental settings. 
+
+First, we change the network structure between agents to alter the speed of information spread \cite{derex2016partial, smolla2019cultural} (Fig. 5A). The network we use, the \textit{Max mean clustering} (MaxMC) network, is directly adopted from \cite{barkoczi2016social}. It consists of the same $100$ agents as the fully connected default network but has a lower degree ($19$ links for each node) and is optimized to maximize the mean clustering coefficient (see Methods for details). We choose this network as an extreme case of slow information spread, as this network was employed by the original authors to demonstrate the effect of a high network diameter on the performance of SLSs. Next, we reset the landscape every $50$ time step to simulate a temporally changing environment \cite{aoki2005emergence, hashimoto2010new, giannoccaro2018team, toyokawa2019social} (Fig. 5B). Since each $R=4$ landscape lasts $L=50$ time steps, we call this experiment L50R4. Lastly, we smoothen the landscape by setting $K=3$ and lengthen the time span to twice the default game, $L=400$ (Fig. 5C). This specific setting (K3L400) is deliberately chosen to let a CF-based SLS become the best-performing baseline (in this case, CF-I), while also demonstrating the variety of environmental settings that can be controlled.
+
+From the results in Fig. 5, all three agents exhibit strategies similar to BI-R, which appear to be outstanding in every condition. We find that in some cases, the agent may stay longer at a certain stage compared to the default environment, but eventually, the model transits from such sub-optimal strategies and converges to a final strategy. Even in the K3L400 environment, the agent's final strategy does not reference the major solution but still exceeds the best-performing baseline, CF-I. This result suggests that the 'copying the best solution' strategy is indeed powerful, especially when it is accompanied by enough randomness from individual learning; both characteristics are successfully discovered by our RL framework. We also apply our framework to other environments, including a much more rugged landscape ($K=11$) and $53$ different real social networks from \cite{ghasemian2020stacking}, the agents of which again show superior performances compared to the baselines (See Supplementary Information for results).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\linewidth]{Fig6}
+  \caption{(A) The average output probability of four regions from the BI test template with $p_2=p_3=0$, calculated for $4$ models (Default, MaxMC, L50R4, K3L400) trained in different environment settings. The upper diagram is a portion of the 2D output diagram when $p_2=p_3=0$ and $0\leq p_1 \leq 100$ showing the division of the four regions. The output is averaged for every pair of $0\leq p_0\leq  p_1\leq 100$. Here, regions \RN{1} and \RN{2} indicate the dimensions of the non-best and the best solution when $p_0\geq p_1$, respectively, while regions \RN{3} and \RN{4} indicate the dimensions of the non-best and the best solution when $p_0 < p_1$, respectively. The zoomed-in inset emphasizes the difference of degree of copying between each model by magnifying the result from region \RN{4}, which has values of $0.9562$ (default), $0.9863$ (MaxMC), $0.9941$ (L50R4), and $0.9269$ (K3L400). (B) Average mean payoff of the $4$ models evaluated in L50R4 (left) and K3L400 (right) environments. ***$p<0.001$.}\label{fig:6}
+\end{figure}
+
+\subsection{Comparison between specialized agents from different environments}
+
+With a careful inspection, one may notice that the 2D output diagrams of the three models in Fig. 5 are not perfectly identical. Even though we described all three agent's strategies as ``similar to BI-R'', they are in fact not the same. We observe that there are critical differences among these strategies, and that each model adapted differently to maximize the reward in their given environment.
+
+The difference between strategies becomes clear when we plot the average model output (probability of producing $1$) of the agents from default, MaxMC, L50R4, and K3L400 environments, by applying the BI test template with $p_2=p_3=0$ and $0\leq p_0, p_1\leq 100$ (Fig. 6A). For every $0\leq p_0\leq 100$, we compute the model output with $p_0\leq p_1\leq 100$ and separately measure the average in four different regions; regions \RN{1} and \RN{2} correspond to the dimensions of the non-best and best solutions when $p_0\geq p_1$, while regions \RN{3} and {4} correspond to the dimensions of the non-best and best solutions when $p_0<p_1$, respectively. For example, the average value of the BI-R strategy with this division would be $0.5$ in regions \RN{1} and \RN{2} (due to random individual learning), $0.0$ for region \RN{3}, and $1.0$ for region \RN{4}. Focusing on region \RN{3}, we see that none of the trained agents show the exact value of $1.0$, which implies that all of them are copying the best solution with some chance of flipping. In the real world, this kind of stochastic copying can occur due to the intrinsic noise of the copying mechanism or some level of persistence in following an individual's own traits. 
+
+Among the agents, the agent from the L50R4 environment has the highest possibility of copying ($0.9941$) while the one from K3L400 has the lowest ($0.9269$). To find out whether this difference is evidence of adaptation to their different environments or not, we evaluate the average mean payoff of the models on these two opposite ends of the spectrum, namely, the L50R4 and K3L400 environments (Fig. 6B). We find that L50R4 and K3L400 are the best-performing model in their own environment, but show significantly low performance in the opposite environment. This strongly testifies to the fact that the difference in copying probability is a result of a proper adaptation to the environment. We speculate that the high chance of flipping in the agent from K3L400 is related to the fact that CF-based strategies, which generally involve a lower level of convergence, show better performances in the K3L400 environment. To summarize, reinforcement learning effectively guides the agent to the optimal SLS for the given environment by tuning the delicate balance between exploration and exploitation, a process which could not be achieved without an exhaustive search.
+
+\section{Conclusion and Outlook}
+
+Different from previous studies \cite{vinitsky2021learning, mckee2021deep, koster2022spurious}, the payoff of our work is given by a fixed landscape, not from a game between agents with a payoff matrix. Our work suggests that social learning can emerge even when explicit payoff interaction between agents is not present, which resonates with the importance of vicarious reinforcement \cite{bandura1963vicarious} in social learning theory. With enough social interaction and observable information, we show that a simple motivation of payoff maximization can lead an individual to an advanced strategy of social learning.
+
+Since our RL framework opens a new way to explore a vast space of social heuristics, one may alter the assumptions of the present work like we changed the episode length and network structure. For example, the observable payoff could be indirect and noisy \cite{horner2010prestige, mackintosh1971analysis, van2010selective}, or the strategy may involve time-dependent memory such as the social learning of multi-agent multi-armed bandits \cite{vial2021robust, sankararaman2019social, rendell2010copy}. Also, agents in nature often perform multiple strategies at once \cite{kendal2018social, nakahashi2012adaptive, bordignon2021adaptive} and do not randomly choose their subjects from among their neighbors \cite{laland2004social}, which might need more elaborate architectures to model. By implementing a permutation-invariant neural network as a policy generator and using reinforcement learning, our framework is versatile enough to integrate a variety of intriguing social characteristics.
+
+Still, there are several limitations to the developed framework. Clearly, our stochastic formulation and neural implementation cannot express \textit{every} possible SLS due to limitations in both modern neural networks and the formulation itself. For instance, the flipping of exactly one random bit in a solution cannot be precisely expressed with our formulation. Also, the investigation and visualization of our model mainly focused on the similarity to already known strategies, which implies that there could be some hidden behavior that is complex enough to be undetected by our test templates (see Supplementary Information for more discussion). %Also, we note that this work does not aim to directly address the emergence of social learning in nature.
+Moreover, societies in nature consist of heterogeneous groups of agents, experience mating and the birth-death process \cite{smolla2019cultural}, and the acquired knowledge of SLSs is not instantly adopted by every constituent.
+Extending the current work to incorporate such biological and cognitive processes would be an intriguing research direction.
+
+To sum up, we developed a neural architecture and training regime that yields complex social learning strategies spontaneously from scratch. Our study has broad implications for social norm formation, cultural evolution \cite{vinitsky2021learning}, and the exploration/exploitation trade-off \cite{mehlhorn2015unpacking}. We highlight that the successful modeling of SLSs via reinforcement learning can provide plausible evidence for the superiority of certain SLSs observed in the real world and also the detailed dynamics of their emergence.
+
+\begin{methods}
+
+\subsection{Stochastic formulation of multi-dimensional SLSs}
+In this work, we define SLSs as stochastic heuristics that aggregate information from observations and produce a probabilistic expression of a future state. More rigorously, we consider the state of the $i$-th agent at time step $t$, $\mathbf{X}_i^t$, as an $N$-dimensional vector of categorical variables. Here, a state can be regarded as a solution for a landscape or a result of an action performed by an agent. Each of the dimensions of the state, $x_{i,d}^t$, may have a different number ($s_d$) of possible actions, namely, $x_{i,d}^t \in {a_d^1, a_d^2, \cdots a_d^{s_d}} = \mathcal{A}_d$. The joint action space is then defined as $\textbf{X}_i^t = (x_{i,1}^t, x_{i,d}^t, \cdots, x_{i,N}^t) \in \mathcal{A}_1 \times \mathcal{A}_2 \times \cdots \times \mathcal{A}_{N} = {\mathcal{A}}$. Also, we denote the payoff as $p_i^t$, the additional features as $\mathbf{I}_i^t$, and the aggregated information from a single agent as $\mathbf{G}_i^t = (\mathbf{X}_i^t, p_i^t, \mathbf{I}_i^t)$. With these notations, an SLS is formulated as a stochastic transition function, $\text{Pr}(\mathbf{X}_i^{t+1} \in \mathcal{A}) = \mathcal{F}(\mathbf{G}_i^t, \mathbf{G}_{j_1}^t, \cdots, \mathbf{G}_{j_S}^t)$, where the indices $(j_1, j_2, ... j_S)$ indicate $S$ interacting neighbors.
+
+\subsection{Task environment generation}
+We employ the NK landscape \cite{kauffman1987towards}, which is multi-peaked and tunably rugged, for the task environment of the social learning strategies (SLSs). The NK landscape assigns a payoff to a binary $N$-dimensional vector by averaging the contributions of the $N$ element, where each contribution is dependent on $K - 1$ other elements that are randomly determined at the initial construction. Precisely, given payoff function $f(N_i|N_i, N_{i+1}, \dotsc, N_k)$, the total payoff $P$ is $\frac{1}{N}\sum^N_{i=1}f(N_i|N_i, N_{i+1}, \dotsc, N_k)$. We set each $f(N_i|N_i, N_{i+1}, \dotsc, N_k)$ as a random number drawn from a uniform distribution between $0$ and $1$ at the initialization of the landscape. The higher the value of $K$, the more the total payoff changes by a flip of a single element and the more rugged the landscape. We normalize the total payoff by the maximum payoff on a landscape ($P_{\text{norm}} = P/P_{\text{max}}$) and raise its value to the power of $8$ ($(P_{\text{norm}})^8)$), following past studies \cite{siggelkow2005speed,lazer2007network, barkoczi2016social}. For ease of explanation, we scale the payoff by a factor of $c_{\text{payoff}} = 100$ to normalize the possible payoff from $0$ to $100$. 
+
+For social learning, we generate networks and let $n = 100$ agents receive the social information from their neighbors. For the fully connected network, every agent is connected to every other agent, fixing the degree of every node to $n - 1$. For the max mean clustering (MaxMC) network, we adopt the network structure from \cite{barkoczi2016social} where the network with a fixed degree of $19$ is iteratively rewired to maximize the mean clustering coefficient of the network.
+
+\subsection{Baseline simulation procedure}
+We assign uniformly random binary vectors to a group of $n$ individuals, and they perform the gathering and adoption process at each time step. First, they apply the given SLS by collecting information from randomly sampled $s$ agents among their connected neighbors. The established social option could be the solution of the agent with the highest payoff (best imitator, BI), the most frequent solution in the sample (conformist, CF), or just any random solution in the sample (random imitator, RI). Second, they adopt the social option if its payoff is greater than the current one, or otherwise, they perform individual (asocial) learning instead (and adopt it if its payoff is greater than the current one). In the case of CF, we also perform individual learning when all of the solutions are equally frequent. The pure individualist (PI) only performs individual learning and does not engage in any form of social learning.
+
+There are several options for asocial learning, which is expressed with a hyphenated abbreviation: models with ``-I" (individual) perform exploration by flipping a randomly selected single bit from the current solution and adopting it if the payoff becomes higher; models with``-P" (probabilistic) assign an independent probability ($1/N$) for each dimension to be flipped (hence multiple bits can be flipped in a single step); and models with ``-R" (random) sample the asocial option completely randomly, without regard to the current state. Pure model names (BI, CF, RI) indicate that the model does not perform individual learning.
+
+We repeat this procedure for $L=200$ steps and record the statistics. The test results, including the neural SLSs, are averaged across $100$ randomly initialized repetitions from $50$ different landscapes, hence a total of $5,000$ repetitions per SLS.
+
+\subsection{Agent architecture and training method}
+For reinforcement learning, we use a actor-critic algorithm with importance sampling and a generalized advantage estimator, which its implementation is identical to a standard proximal policy optimization (PPO) \cite{schulman2017proximal} method without any clipping on its policy. The discrete stochastic actor with categorical probability distribution is trained to receive the same information as the baseline SLS and yield a new solution (binary vector of length $N$) for each agent, while the critic aims to approximate the value function of the given state. We employ a general advantage estimator \cite{schulman2015high} for the advantage function with a discounting factor $\gamma=0.98$ and $\lambda=0.95$. When the goal of the neural SLS is to maximize the area under the average payoff curve, we provide the reward as a payoff of the produced solution at each step. When the goal is to maximize the final payoff at the final step, we provide the reward as a final payoff scaled by trajectory length $L$ at the final step.
+
+Generally, there is no priority between sampled neighbors in SLSs, but the current learner should be able to discriminate itself from its neighbors. To handle this problem, we employ the set transformer \cite{lee2019set} as an architecture for the actor to guarantee permutation invariance and attach a binary variable to each agent's solution vector as a self-indicator ($1$ for the current agent and $0$ for sampled neighbors). To provide the exact ranking and frequency, we calculate (1) the competition ranking of scores among neighbors and itself ($1+N$ agents), and (2) the frequency of each state among its neighbors ($N$). We normalize these two features to let the terms have a scale of $0$ to $1$. The input is formed as a tensor of shape $B \times (S+1) \times (N+1+I)$, where $B$ is the batch size, $S$ is the number of neighbors, $N$ is a dimension of the given NK landscape, and $I$ is the number of features we provide. Here, $N+1+I$ indicates that the fitness of each solution ($1$) and additional information ($I$) are provided to the model.  After receiving this input, the actor yields a tensor of shape $B \times 2 \times N$, which represents the logit of the probability of $0$ and $1$ for each dimension. The final output is then sampled from the normalized logits and compared with the current solution. The one with a higher payoff becomes the solution of the agents for the next time step. This procedure is repeated for an episode length of $L=200$ steps.
+
+We trained our model for $10,000$ epochs with early stopping, which took around $3$ to $4$ days using five Titan V GPUs in parallel computation. All of the experiments used the $tanh$ activation function and Adam optimizer \cite{kingma2014adam} with a learning rate of the actor of $1.0\times 10^{-5}$, learning rate of the critic of $3.0\times 10^{-5}$, and entropy coefficient of $0.0003$, without any further scheduling. In each epoch, every $100$th iteration sampled $1,000$ data from the replay buffer for computing losses for the actor and critic and performing a gradient update. All of the code is implemented in \texttt{PyTorch}.
+
+\subsection{Strategy visualization}
+
+For the BI test, we first obtain the model output probabilities for a test template with all possible integer pairs of payoff $(p_0, p_1, p_2, p_3)$, where $0 \leq p_0 \leq p_{\text{max}}$ and $0 \leq p_3 \leq p_2 \leq p_1 \leq p_{\text{max}}$. We can set this inequality without loss of generality and reduce the effective number of payoff triplets (for each $p_0$) from $(p_{\text{max}}+1)^3$ to $(p_{\text{max+1}})(p_{\text{max}}+2)(p_{\text{max}}+3)/6$ (which is $176,851$ for $p_{\text{max}} = c_{\text{payoff}} = 100$) because the SLS (and our model) is invariant to the neighbor permutation. The model output, corresponding to the probability of producing $1$, is plotted in the form of a 2D output diagram.
+
+For the 3D voxel plot, we calculate the normalized Euclidean distances from (1) the self solution $\textbf{x}_{\text{self}}$, $d_{\text{self}} = \sqrt{\sum_i^N(x_i-x_{\text{self}, i})^2/N}$, (2) the solution with the second highest payoff (third row of the test template) $\textbf{x}_{\text{second}}$, $d_{\text{second}} = \sqrt{\sum_i^N(x_i-x_{\text{second}, i})^2/N}$, and (3) the solution with the highest payoff (second row of the test template) $\textbf{x}_{\text{best}}$, $d_{\text{best}} = \sqrt{\sum_i^N(x_i-x_{\text{best}, i})^2/N}$ to each model output $\textbf{x}$. Finally, we set $r = 1 - d_{\text{self}}$, $g = 1 - d_{\text{second}}$, $b = 1 - d_{\text{best}}$, and opacity $a = 0.3(1-\min({d_{\text{self}}, d_{\text{second}}, d_{\text{best}}}))^2$ for visualization. These values become the color code of the corresponding voxel's face, $(r, g, b, a)$.
+
+For the CF test, we use a different test template having one neighbor with a strictly high payoff $p_1$ and two neighbors with the same solutions and lower payoff, $p_2 = p_3 < p_1$. Considering the permutation invariant, the effective number of payoff triplets (for each $p_0$) for this condition is $(p_{\text{max}})(p_{\text{max}}+1)/2$ (which is $5050$ for $p_{\text{max}} = 100$); the 2D output diagram depicts the model output for these inputs.
+
+\end{methods}
+
+\section{References}
+\bibliographystyle{naturemag}
+\begin{thebibliography}{10}
+  \expandafter\ifx\csname url\endcsname\relax
+    \def\url#1{\texttt{#1}}\fi
+  \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+  \providecommand{\bibinfo}[2]{#2}
+  \providecommand{\eprint}[2][]{\url{#2}}
+  
+  \bibitem{feldman1984cultural}
+  \bibinfo{author}{Feldman, M.~W.} \& \bibinfo{author}{Cavalli-Sforza, L.~L.}
+  \newblock \bibinfo{title}{Cultural and biological evolutionary processes:
+    gene-culture disequilibrium}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+    Sciences}} \textbf{\bibinfo{volume}{81}}, \bibinfo{pages}{1604--1607}
+    (\bibinfo{year}{1984}).
+  
+  \bibitem{feldman1996individual}
+  \bibinfo{author}{Feldman, M.~W.}, \bibinfo{author}{Aoki, K.} \&
+    \bibinfo{author}{Kumm, J.}
+  \newblock \bibinfo{title}{Individual versus social learning: evolutionary
+    analysis in a fluctuating environment}.
+  \newblock \emph{\bibinfo{journal}{Anthropological Science}}
+    \textbf{\bibinfo{volume}{104}}, \bibinfo{pages}{209--231}
+    (\bibinfo{year}{1996}).
+  
+  \bibitem{kendal2018social}
+  \bibinfo{author}{Kendal, R.~L.} \emph{et~al.}
+  \newblock \bibinfo{title}{Social learning strategies: Bridge-building between
+    fields}.
+  \newblock \emph{\bibinfo{journal}{Trends in cognitive sciences}}
+    \textbf{\bibinfo{volume}{22}}, \bibinfo{pages}{651--665}
+    (\bibinfo{year}{2018}).
+  
+  \bibitem{boyd1988culture}
+  \bibinfo{author}{Boyd, R.} \& \bibinfo{author}{Richerson, P.~J.}
+  \newblock \emph{\bibinfo{title}{Culture and the evolutionary process}}
+    (\bibinfo{publisher}{University of Chicago press}, \bibinfo{year}{1988}).
+  
+  \bibitem{laland2004social}
+  \bibinfo{author}{Laland, K.~N.}
+  \newblock \bibinfo{title}{Social learning strategies}.
+  \newblock \emph{\bibinfo{journal}{Animal Learning \& Behavior}}
+    \textbf{\bibinfo{volume}{32}}, \bibinfo{pages}{4--14} (\bibinfo{year}{2004}).
+  
+  \bibitem{hashimoto2010new}
+  \bibinfo{author}{Hashimoto, T.}, \bibinfo{author}{Warashina, K.} \&
+    \bibinfo{author}{Yamauchi, H.}
+  \newblock \bibinfo{title}{New composite evolutionary computation algorithm
+    using interactions among genetic evolution, individual learning and social
+    learning}.
+  \newblock \emph{\bibinfo{journal}{Intelligent Data Analysis}}
+    \textbf{\bibinfo{volume}{14}}, \bibinfo{pages}{497--514}
+    (\bibinfo{year}{2010}).
+  
+  \bibitem{rendell2011cognitive}
+  \bibinfo{author}{Rendell, L.} \emph{et~al.}
+  \newblock \bibinfo{title}{Cognitive culture: theoretical and empirical insights
+    into social learning strategies}.
+  \newblock \emph{\bibinfo{journal}{Trends in cognitive sciences}}
+    \textbf{\bibinfo{volume}{15}}, \bibinfo{pages}{68--76}
+    (\bibinfo{year}{2011}).
+  
+  \bibitem{mason2012collaborative}
+  \bibinfo{author}{Mason, W.} \& \bibinfo{author}{Watts, D.~J.}
+  \newblock \bibinfo{title}{Collaborative learning in networks}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+    Sciences}} \textbf{\bibinfo{volume}{109}}, \bibinfo{pages}{764--769}
+    (\bibinfo{year}{2012}).
+  
+  \bibitem{barkoczi2016social}
+  \bibinfo{author}{Barkoczi, D.} \& \bibinfo{author}{Galesic, M.}
+  \newblock \bibinfo{title}{Social learning strategies modify the effect of
+    network structure on group performance}.
+  \newblock \emph{\bibinfo{journal}{Nature communications}}
+    \textbf{\bibinfo{volume}{7}}, \bibinfo{pages}{1--8} (\bibinfo{year}{2016}).
+  
+  \bibitem{todd2020interaction}
+  \bibinfo{author}{Todd, G.}, \bibinfo{author}{Candadai, M.} \&
+    \bibinfo{author}{Izquierdo, E.~J.}
+  \newblock \bibinfo{title}{Interaction between evolution and learning in nk
+    fitness landscapes}.
+  \newblock In \emph{\bibinfo{booktitle}{Artificial Life Conference
+    Proceedings}}, \bibinfo{pages}{761--767} (\bibinfo{organization}{MIT Press},
+    \bibinfo{year}{2020}).
+  
+  \bibitem{toyokawa2019social}
+  \bibinfo{author}{Toyokawa, W.}, \bibinfo{author}{Whalen, A.} \&
+    \bibinfo{author}{Laland, K.~N.}
+  \newblock \bibinfo{title}{Social learning strategies regulate the wisdom and
+    madness of interactive crowds}.
+  \newblock \emph{\bibinfo{journal}{Nature Human Behaviour}}
+    \textbf{\bibinfo{volume}{3}}, \bibinfo{pages}{183--193}
+    (\bibinfo{year}{2019}).
+  
+  \bibitem{almaatouq2020adaptive}
+  \bibinfo{author}{Almaatouq, A.} \emph{et~al.}
+  \newblock \bibinfo{title}{Adaptive social networks promote the wisdom of
+    crowds}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+    Sciences}} \textbf{\bibinfo{volume}{117}}, \bibinfo{pages}{11379--11386}
+    (\bibinfo{year}{2020}).
+  
+  \bibitem{macy1996natural}
+  \bibinfo{author}{Macy, M.}
+  \newblock \bibinfo{title}{Natural selection and social learning in prisoner's
+    dilemma: Coadaptation with genetic algorithms and artificial neural
+    networks}.
+  \newblock \emph{\bibinfo{journal}{Sociological methods \& research}}
+    \textbf{\bibinfo{volume}{25}}, \bibinfo{pages}{103--137}
+    (\bibinfo{year}{1996}).
+  
+  \bibitem{perreault2012bayesian}
+  \bibinfo{author}{Perreault, C.}, \bibinfo{author}{Moya, C.} \&
+    \bibinfo{author}{Boyd, R.}
+  \newblock \bibinfo{title}{A bayesian approach to the evolution of social
+    learning}.
+  \newblock \emph{\bibinfo{journal}{Evolution and Human Behavior}}
+    \textbf{\bibinfo{volume}{33}}, \bibinfo{pages}{449--459}
+    (\bibinfo{year}{2012}).
+  
+  \bibitem{dawson2013learning}
+  \bibinfo{author}{Dawson, E.~H.}, \bibinfo{author}{Avargues-Weber, A.},
+    \bibinfo{author}{Chittka, L.} \& \bibinfo{author}{Leadbeater, E.}
+  \newblock \bibinfo{title}{Learning by observation emerges from simple
+    associations in an insect model}.
+  \newblock \emph{\bibinfo{journal}{Current Biology}}
+    \textbf{\bibinfo{volume}{23}}, \bibinfo{pages}{727--730}
+    (\bibinfo{year}{2013}).
+  
+  \bibitem{lindstrom2015mechanisms}
+  \bibinfo{author}{Lindstr{\"o}m, B.} \& \bibinfo{author}{Olsson, A.}
+  \newblock \bibinfo{title}{Mechanisms of social avoidance learning can explain
+    the emergence of adaptive and arbitrary behavioral traditions in humans.}
+  \newblock \emph{\bibinfo{journal}{Journal of Experimental Psychology: General}}
+    \textbf{\bibinfo{volume}{144}}, \bibinfo{pages}{688} (\bibinfo{year}{2015}).
+  
+  \bibitem{rendell2010copy}
+  \bibinfo{author}{Rendell, L.} \emph{et~al.}
+  \newblock \bibinfo{title}{Why copy others? insights from the social learning
+    strategies tournament}.
+  \newblock \emph{\bibinfo{journal}{Science}} \textbf{\bibinfo{volume}{328}},
+    \bibinfo{pages}{208--213} (\bibinfo{year}{2010}).
+  
+  \bibitem{csaszar2010much}
+  \bibinfo{author}{Csaszar, F.~A.} \& \bibinfo{author}{Siggelkow, N.}
+  \newblock \bibinfo{title}{How much to copy? determinants of effective imitation
+    breadth}.
+  \newblock \emph{\bibinfo{journal}{Organization Science}}
+    \textbf{\bibinfo{volume}{21}}, \bibinfo{pages}{661--676}
+    (\bibinfo{year}{2010}).
+  
+  \bibitem{fontanari2015exploring}
+  \bibinfo{author}{Fontanari, J.~F.}
+  \newblock \bibinfo{title}{Exploring nk fitness landscapes using imitative
+    learning}.
+  \newblock \emph{\bibinfo{journal}{The European Physical Journal B}}
+    \textbf{\bibinfo{volume}{88}}, \bibinfo{pages}{1--7} (\bibinfo{year}{2015}).
+  
+  \bibitem{barkoczi2016collective}
+  \bibinfo{author}{Barkoczi, D.}, \bibinfo{author}{Analytis, P.~P.} \&
+    \bibinfo{author}{Wu, C.}
+  \newblock \bibinfo{title}{Collective search on rugged landscapes: A
+    cross-environmental analysis}.
+  \newblock In \emph{\bibinfo{booktitle}{Proceedings of the 38th annual
+    conference of the cognitive science society}}, \bibinfo{pages}{918--923}
+    (\bibinfo{organization}{Cognitive Science Society}, \bibinfo{year}{2016}).
+  
+  \bibitem{aoki2005emergence}
+  \bibinfo{author}{Aoki, K.}, \bibinfo{author}{Wakano, J.} \&
+    \bibinfo{author}{Feldman, M.}
+  \newblock \bibinfo{title}{The emergence of social learning in a temporally
+    changing environment: a theoretical model}.
+  \newblock \emph{\bibinfo{journal}{Current Anthropology}}
+    \textbf{\bibinfo{volume}{46}}, \bibinfo{pages}{334--340}
+    (\bibinfo{year}{2005}).
+  
+  \bibitem{lopes2009computational}
+  \bibinfo{author}{Lopes, M.}, \bibinfo{author}{Melo, F.~S.},
+    \bibinfo{author}{Kenward, B.} \& \bibinfo{author}{Santos-Victor, J.}
+  \newblock \bibinfo{title}{A computational model of social-learning mechanisms}.
+  \newblock \emph{\bibinfo{journal}{Adaptive behavior}}
+    \textbf{\bibinfo{volume}{17}}, \bibinfo{pages}{467--483}
+    (\bibinfo{year}{2009}).
+  
+  \bibitem{aoki2010evolution}
+  \bibinfo{author}{Aoki, K.}
+  \newblock \bibinfo{title}{Evolution of the social-learner-explorer strategy in
+    an environmentally heterogeneous two-island model}.
+  \newblock \emph{\bibinfo{journal}{Evolution: International Journal of Organic
+    Evolution}} \textbf{\bibinfo{volume}{64}}, \bibinfo{pages}{2575--2586}
+    (\bibinfo{year}{2010}).
+  
+  \bibitem{giraldeau2018social}
+  \bibinfo{author}{Giraldeau, L.-A.} \& \bibinfo{author}{Caraco, T.}
+  \newblock \bibinfo{title}{Social foraging theory}.
+  \newblock In \emph{\bibinfo{booktitle}{Social Foraging Theory}}
+    (\bibinfo{publisher}{Princeton University Press}, \bibinfo{year}{2018}).
+  
+  \bibitem{sivanandam2008genetic}
+  \bibinfo{author}{Sivanandam, S.} \& \bibinfo{author}{Deepa, S.}
+  \newblock \bibinfo{title}{Genetic algorithms}.
+  \newblock In \emph{\bibinfo{booktitle}{Introduction to genetic algorithms}},
+    \bibinfo{pages}{15--37} (\bibinfo{publisher}{Springer},
+    \bibinfo{year}{2008}).
+  
+  \bibitem{van1987simulated}
+  \bibinfo{author}{Van~Laarhoven, P.~J.} \& \bibinfo{author}{Aarts, E.~H.}
+  \newblock \bibinfo{title}{Simulated annealing}.
+  \newblock In \emph{\bibinfo{booktitle}{Simulated annealing: Theory and
+    applications}}, \bibinfo{pages}{7--15} (\bibinfo{publisher}{Springer},
+    \bibinfo{year}{1987}).
+  
+  \bibitem{runarsson2011learning}
+  \bibinfo{author}{Runarsson, T.~P.}
+  \newblock \bibinfo{title}{Learning heuristic policies--a reinforcement learning
+    problem}.
+  \newblock In \emph{\bibinfo{booktitle}{International Conference on Learning and
+    Intelligent Optimization}}, \bibinfo{pages}{423--432}
+    (\bibinfo{organization}{Springer}, \bibinfo{year}{2011}).
+  
+  \bibitem{bianchi2015transferring}
+  \bibinfo{author}{Bianchi, R.~A.}, \bibinfo{author}{Celiberto~Jr, L.~A.},
+    \bibinfo{author}{Santos, P.~E.}, \bibinfo{author}{Matsuura, J.~P.} \&
+    \bibinfo{author}{De~Mantaras, R.~L.}
+  \newblock \bibinfo{title}{Transferring knowledge as heuristics in reinforcement
+    learning: A case-based approach}.
+  \newblock \emph{\bibinfo{journal}{Artificial Intelligence}}
+    \textbf{\bibinfo{volume}{226}}, \bibinfo{pages}{102--121}
+    (\bibinfo{year}{2015}).
+  
+  \bibitem{fiderer2021neural}
+  \bibinfo{author}{Fiderer, L.~J.}, \bibinfo{author}{Schuff, J.} \&
+    \bibinfo{author}{Braun, D.}
+  \newblock \bibinfo{title}{Neural-network heuristics for adaptive bayesian
+    quantum estimation}.
+  \newblock \emph{\bibinfo{journal}{PRX Quantum}} \textbf{\bibinfo{volume}{2}},
+    \bibinfo{pages}{020303} (\bibinfo{year}{2021}).
+  
+  \bibitem{yonetani2021path}
+  \bibinfo{author}{Yonetani, R.}, \bibinfo{author}{Taniai, T.},
+    \bibinfo{author}{Barekatain, M.}, \bibinfo{author}{Nishimura, M.} \&
+    \bibinfo{author}{Kanezaki, A.}
+  \newblock \bibinfo{title}{Path planning using neural a* search}.
+  \newblock In \emph{\bibinfo{booktitle}{International Conference on Machine
+    Learning}}, \bibinfo{pages}{12029--12039} (\bibinfo{organization}{PMLR},
+    \bibinfo{year}{2021}).
+  
+  \bibitem{yaman2021meta}
+  \bibinfo{author}{Yaman, A.}, \bibinfo{author}{Bredeche, N.},
+    \bibinfo{author}{{\c{C}}aylak, O.}, \bibinfo{author}{Leibo, J.~Z.} \&
+    \bibinfo{author}{Lee, S.~W.}
+  \newblock \bibinfo{title}{Meta-control of social learning strategies}.
+  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:2106.10015}}
+    (\bibinfo{year}{2021}).
+  
+  \bibitem{vinitsky2021learning}
+  \bibinfo{author}{Vinitsky, E.} \emph{et~al.}
+  \newblock \bibinfo{title}{A learning agent that acquires social norms from
+    public sanctions in decentralized multi-agent settings}.
+  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:2106.09012}}
+    (\bibinfo{year}{2021}).
+  
+  \bibitem{ndousse2021emergent}
+  \bibinfo{author}{Ndousse, K.~K.}, \bibinfo{author}{Eck, D.},
+    \bibinfo{author}{Levine, S.} \& \bibinfo{author}{Jaques, N.}
+  \newblock \bibinfo{title}{Emergent social learning via multi-agent
+    reinforcement learning}.
+  \newblock In \emph{\bibinfo{booktitle}{International Conference on Machine
+    Learning}}, \bibinfo{pages}{7991--8004} (\bibinfo{organization}{PMLR},
+    \bibinfo{year}{2021}).
+  
+  \bibitem{mckee2021deep}
+  \bibinfo{author}{McKee, K.~R.} \emph{et~al.}
+  \newblock \bibinfo{title}{Deep reinforcement learning models the emergent
+    dynamics of human cooperation}.
+  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:2103.04982}}
+    (\bibinfo{year}{2021}).
+  
+  \bibitem{koster2022spurious}
+  \bibinfo{author}{K{\"o}ster, R.} \emph{et~al.}
+  \newblock \bibinfo{title}{Spurious normativity enhances learning of compliance
+    and enforcement behavior in artificial agents}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+    Sciences}} \textbf{\bibinfo{volume}{119}} (\bibinfo{year}{2022}).
+  
+  \bibitem{giannoccaro2018team}
+  \bibinfo{author}{Giannoccaro, I.}, \bibinfo{author}{Massari, G.~F.} \&
+    \bibinfo{author}{Carbone, G.}
+  \newblock \bibinfo{title}{Team resilience in complex and turbulent
+    environments: The effect of size and density of social interactions}.
+  \newblock \emph{\bibinfo{journal}{Complexity}} \textbf{\bibinfo{volume}{2018}}
+    (\bibinfo{year}{2018}).
+  
+  \bibitem{kauffman1987towards}
+  \bibinfo{author}{Kauffman, S.} \& \bibinfo{author}{Levin, S.}
+  \newblock \bibinfo{title}{Towards a general theory of adaptive walks on rugged
+    landscapes}.
+  \newblock \emph{\bibinfo{journal}{Journal of theoretical Biology}}
+    \textbf{\bibinfo{volume}{128}}, \bibinfo{pages}{11--45}
+    (\bibinfo{year}{1987}).
+  
+  \bibitem{dickerson2017role}
+  \bibinfo{author}{Dickerson, K.}, \bibinfo{author}{Gerhardstein, P.} \&
+    \bibinfo{author}{Moser, A.}
+  \newblock \bibinfo{title}{The role of the human mirror neuron system in
+    supporting communication in a digital world}.
+  \newblock \emph{\bibinfo{journal}{Frontiers in Psychology}}
+    \textbf{\bibinfo{volume}{8}}, \bibinfo{pages}{698} (\bibinfo{year}{2017}).
+  
+  \bibitem{olsson2020neural}
+  \bibinfo{author}{Olsson, A.}, \bibinfo{author}{Knapska, E.} \&
+    \bibinfo{author}{Lindstr{\"o}m, B.}
+  \newblock \bibinfo{title}{The neural and computational systems of social
+    learning}.
+  \newblock \emph{\bibinfo{journal}{Nature Reviews Neuroscience}}
+    \textbf{\bibinfo{volume}{21}}, \bibinfo{pages}{197--212}
+    (\bibinfo{year}{2020}).
+  
+  \bibitem{derex2016partial}
+  \bibinfo{author}{Derex, M.} \& \bibinfo{author}{Boyd, R.}
+  \newblock \bibinfo{title}{Partial connectivity increases cultural accumulation
+    within groups}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+    Sciences}} \textbf{\bibinfo{volume}{113}}, \bibinfo{pages}{2982--2987}
+    (\bibinfo{year}{2016}).
+  
+  \bibitem{smolla2019cultural}
+  \bibinfo{author}{Smolla, M.} \& \bibinfo{author}{Ak{\c{c}}ay, E.}
+  \newblock \bibinfo{title}{Cultural selection shapes network structure}.
+  \newblock \emph{\bibinfo{journal}{Science advances}}
+    \textbf{\bibinfo{volume}{5}}, \bibinfo{pages}{eaaw0609}
+    (\bibinfo{year}{2019}).
+  
+  \bibitem{ghasemian2020stacking}
+  \bibinfo{author}{Ghasemian, A.}, \bibinfo{author}{Hosseinmardi, H.},
+    \bibinfo{author}{Galstyan, A.}, \bibinfo{author}{Airoldi, E.~M.} \&
+    \bibinfo{author}{Clauset, A.}
+  \newblock \bibinfo{title}{Stacking models for nearly optimal link prediction in
+    complex networks}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+    Sciences}} \textbf{\bibinfo{volume}{117}}, \bibinfo{pages}{23393--23400}
+    (\bibinfo{year}{2020}).
+  
+  \bibitem{bandura1963vicarious}
+  \bibinfo{author}{Bandura, A.}, \bibinfo{author}{Ross, D.} \&
+    \bibinfo{author}{Ross, S.~A.}
+  \newblock \bibinfo{title}{Vicarious reinforcement and imitative learning.}
+  \newblock \emph{\bibinfo{journal}{The Journal of abnormal and social
+    psychology}} \textbf{\bibinfo{volume}{67}}, \bibinfo{pages}{601}
+    (\bibinfo{year}{1963}).
+  
+  \bibitem{horner2010prestige}
+  \bibinfo{author}{Horner, V.}, \bibinfo{author}{Proctor, D.},
+    \bibinfo{author}{Bonnie, K.~E.}, \bibinfo{author}{Whiten, A.} \&
+    \bibinfo{author}{de~Waal, F.~B.}
+  \newblock \bibinfo{title}{Prestige affects cultural learning in chimpanzees}.
+  \newblock \emph{\bibinfo{journal}{PloS one}} \textbf{\bibinfo{volume}{5}},
+    \bibinfo{pages}{e10625} (\bibinfo{year}{2010}).
+  
+  \bibitem{mackintosh1971analysis}
+  \bibinfo{author}{Mackintosh, N.}
+  \newblock \bibinfo{title}{An analysis of overshadowing and blocking}.
+  \newblock \emph{\bibinfo{journal}{Quarterly Journal of Experimental
+    Psychology}} \textbf{\bibinfo{volume}{23}}, \bibinfo{pages}{118--125}
+    (\bibinfo{year}{1971}).
+  
+  \bibitem{van2010selective}
+  \bibinfo{author}{Van~de Waal, E.}, \bibinfo{author}{Renevey, N.},
+    \bibinfo{author}{Favre, C.~M.} \& \bibinfo{author}{Bshary, R.}
+  \newblock \bibinfo{title}{Selective attention to philopatric models causes
+    directed social learning in wild vervet monkeys}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the Royal Society B:
+    Biological Sciences}} \textbf{\bibinfo{volume}{277}},
+    \bibinfo{pages}{2105--2111} (\bibinfo{year}{2010}).
+  
+  \bibitem{vial2021robust}
+  \bibinfo{author}{Vial, D.}, \bibinfo{author}{Shakkottai, S.} \&
+    \bibinfo{author}{Srikant, R.}
+  \newblock \bibinfo{title}{Robust multi-agent multi-armed bandits}.
+  \newblock In \emph{\bibinfo{booktitle}{Proceedings of the Twenty-second
+    International Symposium on Theory, Algorithmic Foundations, and Protocol
+    Design for Mobile Networks and Mobile Computing}}, \bibinfo{pages}{161--170}
+    (\bibinfo{year}{2021}).
+  
+  \bibitem{sankararaman2019social}
+  \bibinfo{author}{Sankararaman, A.}, \bibinfo{author}{Ganesh, A.} \&
+    \bibinfo{author}{Shakkottai, S.}
+  \newblock \bibinfo{title}{Social learning in multi agent multi armed bandits}.
+  \newblock \emph{\bibinfo{journal}{Proceedings of the ACM on Measurement and
+    Analysis of Computing Systems}} \textbf{\bibinfo{volume}{3}},
+    \bibinfo{pages}{1--35} (\bibinfo{year}{2019}).
+  
+  \bibitem{nakahashi2012adaptive}
+  \bibinfo{author}{Nakahashi, W.}, \bibinfo{author}{Wakano, J.~Y.} \&
+    \bibinfo{author}{Henrich, J.}
+  \newblock \bibinfo{title}{Adaptive social learning strategies in temporally and
+    spatially varying environments}.
+  \newblock \emph{\bibinfo{journal}{Human Nature}} \textbf{\bibinfo{volume}{23}},
+    \bibinfo{pages}{386--418} (\bibinfo{year}{2012}).
+  
+  \bibitem{bordignon2021adaptive}
+  \bibinfo{author}{Bordignon, V.}, \bibinfo{author}{Matta, V.} \&
+    \bibinfo{author}{Sayed, A.~H.}
+  \newblock \bibinfo{title}{Adaptive social learning}.
+  \newblock \emph{\bibinfo{journal}{IEEE Transactions on Information Theory}}
+    (\bibinfo{year}{2021}).
+  
+  \bibitem{mehlhorn2015unpacking}
+  \bibinfo{author}{Mehlhorn, K.} \emph{et~al.}
+  \newblock \bibinfo{title}{Unpacking the exploration--exploitation tradeoff: A
+    synthesis of human and animal literatures.}
+  \newblock \emph{\bibinfo{journal}{Decision}} \textbf{\bibinfo{volume}{2}},
+    \bibinfo{pages}{191} (\bibinfo{year}{2015}).
+  
+  \bibitem{siggelkow2005speed}
+  \bibinfo{author}{Siggelkow, N.} \& \bibinfo{author}{Rivkin, J.~W.}
+  \newblock \bibinfo{title}{Speed and search: Designing organizations for
+    turbulence and complexity}.
+  \newblock \emph{\bibinfo{journal}{Organization Science}}
+    \textbf{\bibinfo{volume}{16}}, \bibinfo{pages}{101--122}
+    (\bibinfo{year}{2005}).
+  
+  \bibitem{lazer2007network}
+  \bibinfo{author}{Lazer, D.} \& \bibinfo{author}{Friedman, A.}
+  \newblock \bibinfo{title}{The network structure of exploration and
+    exploitation}.
+  \newblock \emph{\bibinfo{journal}{Administrative science quarterly}}
+    \textbf{\bibinfo{volume}{52}}, \bibinfo{pages}{667--694}
+    (\bibinfo{year}{2007}).
+  
+  \bibitem{schulman2017proximal}
+  \bibinfo{author}{Schulman, J.}, \bibinfo{author}{Wolski, F.},
+    \bibinfo{author}{Dhariwal, P.}, \bibinfo{author}{Radford, A.} \&
+    \bibinfo{author}{Klimov, O.}
+  \newblock \bibinfo{title}{Proximal policy optimization algorithms}.
+  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:1707.06347}}
+    (\bibinfo{year}{2017}).
+  
+  \bibitem{schulman2015high}
+  \bibinfo{author}{Schulman, J.}, \bibinfo{author}{Moritz, P.},
+    \bibinfo{author}{Levine, S.}, \bibinfo{author}{Jordan, M.} \&
+    \bibinfo{author}{Abbeel, P.}
+  \newblock \bibinfo{title}{High-dimensional continuous control using generalized
+    advantage estimation}.
+  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:1506.02438}}
+    (\bibinfo{year}{2015}).
+  
+  \bibitem{lee2019set}
+  \bibinfo{author}{Lee, J.} \emph{et~al.}
+  \newblock \bibinfo{title}{Set transformer: A framework for attention-based
+    permutation-invariant neural networks}.
+  \newblock In \emph{\bibinfo{booktitle}{International Conference on Machine
+    Learning}}, \bibinfo{pages}{3744--3753} (\bibinfo{organization}{PMLR},
+    \bibinfo{year}{2019}).
+  
+  \bibitem{kingma2014adam}
+  \bibinfo{author}{Kingma, D.~P.} \& \bibinfo{author}{Ba, J.}
+  \newblock \bibinfo{title}{Adam: A method for stochastic optimization}.
+  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:1412.6980}}
+    (\bibinfo{year}{2014}).
+  
+  \end{thebibliography}
+  
+%% Here is the endmatter stuff: Supplementary Info, etc.
+%% Use \item's to separate, default label is "Acknowledgements"
+
+\begin{addendum}
+ \item This research was supported by the Basic Science Research Program through the National Research Foundation of Korea NRF-2022R1A2B5B02001752.
+ \item[Author contribution] S.H. designed the study and performed the simulation. S.H. and H.J. analyzed the results and wrote the paper.
+ \item[Code availability] Simulation code and data files are available at https://github.com/nokpil/SocialNet.
+ \item[Competing Interests] The authors declare that they have no competing financial interests.
+ \item[Correspondence] Correspondence and requests for materials should be addressed to Hawoong Jeong (hjeong@kaist.edu).
+\end{addendum}
+\end{document}

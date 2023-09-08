@@ -1,0 +1,115 @@
+\relax 
+\citation{feldman1984cultural,feldman1996individual,kendal2018social}
+\citation{boyd1988culture,laland2004social,hashimoto2010new,rendell2011cognitive,mason2012collaborative,barkoczi2016social,todd2020interaction}
+\citation{laland2004social}
+\citation{toyokawa2019social,almaatouq2020adaptive}
+\citation{boyd1988culture,laland2004social,macy1996natural,perreault2012bayesian}
+\citation{dawson2013learning,lindstrom2015mechanisms}
+\citation{rendell2010copy,csaszar2010much,mason2012collaborative,fontanari2015exploring,barkoczi2016social,barkoczi2016collective}
+\citation{aoki2005emergence,lopes2009computational,aoki2010evolution,giraldeau2018social}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{}\protected@file@percent }
+\citation{sivanandam2008genetic}
+\citation{van1987simulated}
+\citation{runarsson2011learning,bianchi2015transferring,fiderer2021neural,yonetani2021path,yaman2021meta}
+\citation{vinitsky2021learning,ndousse2021emergent,mckee2021deep,koster2022spurious}
+\citation{csaszar2010much,hashimoto2010new,fontanari2015exploring,barkoczi2016social,giannoccaro2018team,todd2020interaction}
+\citation{kauffman1987towards}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces (A) NK model on a social network. At every time step, each person randomly observes a certain number of people among their neighbors and applies a social learning strategy (SLS) to maximize their individual time-average payoff. The solution is represented as an $N$-dimensional binary vector, where its payoff is given by the NK landscape. (B) Available information and various mechanisms for SLSs. The conventional strategies include frequently observed and proposed heuristics, such as best imitator and conformist strategies, while we present a reinforcement learning approach to find the optimal SLS for the given environment. The agent tries to maximize the time-average payoff it receives from the NK landscape as a result of its action of producing probabilities for a new solution. State correction after the sampled solution is omitted for visualization.}}{4}{}\protected@file@percent }
+\newlabel{fig:1}{{1}{4}}
+\citation{laland2004social,barkoczi2016social,barkoczi2016collective}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces (A) BI test template solution vectors and representative strategies for the face colors of the voxels. (B) Three-dimensional (3D) strategy diagram (left) and two-dimensional (2D) output diagram (right) for the BI test. The model results from the test template with score $p_1\leq p_2\leq p_3$ are shown. In the 3D diagram, each voxel's location represents its neighbor's score $(p_1, p_2, p_3)$ and its face color indicates the distances between the output probability and identified strategies. The 2D output diagram directly shows the output probability of producing $1$ for each $N$ dimension. For visualization, in what follows, the voxels in the 3D strategy diagrams are drawn by taking every 5th coordinate value in each dimension. (C) CF test template solution vectors and representative strategies (left) and 2D output diagram (right) employing the test template with $p_1\leq p_2=p_3$ to accuratley detect the true CF strategy.}}{6}{}\protected@file@percent }
+\newlabel{fig:2}{{2}{6}}
+\citation{barkoczi2016social}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Result}{8}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces (A) Mean payoff and (B) average mean payoff over time of the SLS from reinforcement learning (RL) and various baseline SLSs (BI, BI-I, BI-P, BI-R, CF, CF-I, CF-P, CF-R, PI-I, PI-P, PI-R, RI). Here, the RL agent ($83.03$) surpasses the best-performing baseline, BI-R ($77.54$), as indicated with the dotted line in (B). Error bars show $\pm $5 standard error of the mean. (C) Average mean payoff and entropy of the model output during $5,700$ training epochs. The bold lines show the exponential moving average with a smoothing factor of $0.99$. (D) 3D strategy diagrams and 2D output diagrams for the BI test and the CF test from the model with training epochs of $1,000$, $2,000$, $3,000$, and $4,500$, each representing $4$ distinct stages of learning dynamics. Below the plots, we draw conceptual diagrams of the important lessons that the agent learned as the agent passes through to the next stage. The model is trained on a fully connected network of $100$ agents with NK$(15, 7)$ environments.}}{9}{}\protected@file@percent }
+\newlabel{fig:3}{{3}{9}}
+\citation{koster2022spurious}
+\citation{dickerson2017role,olsson2020neural}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces (A) A 3D strategy diagram and 2D output diagram from the final model of the default environment with $p_0=50$. The zoomed-in inset shows the output probability from $p_2=p_3=0$ and $0\leq p_1 \leq 100$ to visualize the clear strategic boundary at $p_1=50$, highlighted with a white dotted line. (B, C) 3D strategy diagrams and corresponding insets with $p_0=30$ (B) and $p_0=70$ (C). The model is trained on a fully connected network of $100$ agents with NK$(15, 7)$ environments.}}{11}{}\protected@file@percent }
+\newlabel{fig:4}{{4}{11}}
+\citation{laland2004social}
+\citation{derex2016partial,smolla2019cultural}
+\citation{barkoczi2016social}
+\citation{aoki2005emergence,hashimoto2010new,giannoccaro2018team,toyokawa2019social}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Trained model results from diverse environment settings compared to default. From left to right, each panel shows a conceptual diagram, mean payoff, average mean payoff over time, and 3D strategy diagram with 2D output diagrams for both BI and CF tests. (A) Results from a different underlying network. Instead of a complete network, agents are now connected in a modular network that is optimized to maximize the mean clustering coefficient (MaxMC). (B) Results from a temporally changing environment. Every $50$ time steps (hence $4$ times among $200$ time steps), the underlying NK landscape is randomly reassigned, and all of the scores are newly calculated based on the new landscape (L50R4). (C) Results from a smoother environment with a longer time span. The landscape becomes smoother with $K=3$, and the total time steps are increased to $400$ (K3L400). }}{15}{}\protected@file@percent }
+\newlabel{fig:5}{{5}{15}}
+\citation{ghasemian2020stacking}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces (A) The average output probability of four regions from the BI test template with $p_2=p_3=0$, calculated for $4$ models (Default, MaxMC, L50R4, K3L400) trained in different environment settings. The upper diagram is a portion of the 2D output diagram when $p_2=p_3=0$ and $0\leq p_1 \leq 100$ showing the division of the four regions. The output is averaged for every pair of $0\leq p_0\leq p_1\leq 100$. Here, regions \textup  {\uppercase {i}} and \textup  {\uppercase {ii}} indicate the dimensions of the non-best and the best solution when $p_0\geq p_1$, respectively, while regions \textup  {\uppercase {iii}} and \textup  {\uppercase {iv}} indicate the dimensions of the non-best and the best solution when $p_0 < p_1$, respectively. The zoomed-in inset emphasizes the difference of degree of copying between each model by magnifying the result from region \textup  {\uppercase {iv}}, which has values of $0.9562$ (default), $0.9863$ (MaxMC), $0.9941$ (L50R4), and $0.9269$ (K3L400). (B) Average mean payoff of the $4$ models evaluated in L50R4 (left) and K3L400 (right) environments. ***$p<0.001$.}}{17}{}\protected@file@percent }
+\newlabel{fig:6}{{6}{17}}
+\citation{vinitsky2021learning,mckee2021deep,koster2022spurious}
+\citation{bandura1963vicarious}
+\citation{horner2010prestige,mackintosh1971analysis,van2010selective}
+\citation{vial2021robust,sankararaman2019social,rendell2010copy}
+\citation{kendal2018social,nakahashi2012adaptive,bordignon2021adaptive}
+\citation{laland2004social}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Conclusion and Outlook}{19}{}\protected@file@percent }
+\citation{smolla2019cultural}
+\citation{vinitsky2021learning}
+\citation{mehlhorn2015unpacking}
+\citation{kauffman1987towards}
+\citation{siggelkow2005speed,lazer2007network,barkoczi2016social}
+\citation{barkoczi2016social}
+\citation{schulman2017proximal}
+\citation{schulman2015high}
+\citation{lee2019set}
+\citation{kingma2014adam}
+\bibstyle{naturemag}
+\bibcite{feldman1984cultural}{1}
+\bibcite{feldman1996individual}{2}
+\bibcite{kendal2018social}{3}
+\bibcite{boyd1988culture}{4}
+\bibcite{laland2004social}{5}
+\bibcite{hashimoto2010new}{6}
+\bibcite{rendell2011cognitive}{7}
+\@writefile{toc}{\contentsline {section}{\numberline {4}References}{26}{}\protected@file@percent }
+\bibcite{mason2012collaborative}{8}
+\bibcite{barkoczi2016social}{9}
+\bibcite{todd2020interaction}{10}
+\bibcite{toyokawa2019social}{11}
+\bibcite{almaatouq2020adaptive}{12}
+\bibcite{macy1996natural}{13}
+\bibcite{perreault2012bayesian}{14}
+\bibcite{dawson2013learning}{15}
+\bibcite{lindstrom2015mechanisms}{16}
+\bibcite{rendell2010copy}{17}
+\bibcite{csaszar2010much}{18}
+\bibcite{fontanari2015exploring}{19}
+\bibcite{barkoczi2016collective}{20}
+\bibcite{aoki2005emergence}{21}
+\bibcite{lopes2009computational}{22}
+\bibcite{aoki2010evolution}{23}
+\bibcite{giraldeau2018social}{24}
+\bibcite{sivanandam2008genetic}{25}
+\bibcite{van1987simulated}{26}
+\bibcite{runarsson2011learning}{27}
+\bibcite{bianchi2015transferring}{28}
+\bibcite{fiderer2021neural}{29}
+\bibcite{yonetani2021path}{30}
+\bibcite{yaman2021meta}{31}
+\bibcite{vinitsky2021learning}{32}
+\bibcite{ndousse2021emergent}{33}
+\bibcite{mckee2021deep}{34}
+\bibcite{koster2022spurious}{35}
+\bibcite{giannoccaro2018team}{36}
+\bibcite{kauffman1987towards}{37}
+\bibcite{dickerson2017role}{38}
+\bibcite{olsson2020neural}{39}
+\bibcite{derex2016partial}{40}
+\bibcite{smolla2019cultural}{41}
+\bibcite{ghasemian2020stacking}{42}
+\bibcite{bandura1963vicarious}{43}
+\bibcite{horner2010prestige}{44}
+\bibcite{mackintosh1971analysis}{45}
+\bibcite{van2010selective}{46}
+\bibcite{vial2021robust}{47}
+\bibcite{sankararaman2019social}{48}
+\bibcite{nakahashi2012adaptive}{49}
+\bibcite{bordignon2021adaptive}{50}
+\bibcite{mehlhorn2015unpacking}{51}
+\bibcite{siggelkow2005speed}{52}
+\bibcite{lazer2007network}{53}
+\bibcite{schulman2017proximal}{54}
+\bibcite{schulman2015high}{55}
+\bibcite{lee2019set}{56}
+\bibcite{kingma2014adam}{57}
+\gdef \@abspage@last{33}
