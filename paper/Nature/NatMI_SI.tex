@@ -6,6 +6,10 @@
 \documentclass{nature}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{algorithm2e}
+\RestyleAlgo{ruled}
+\SetKwComment{Comment}{/* }{ */}
+\SetKw{Kwin}{in}
 
 \renewcommand{\thefigure}{S\arabic{figure}}
 %% make sure you have the nature.cls and naturemag.bst files where
@@ -17,7 +21,7 @@
 \renewenvironment*{figure}{\@float{figure}}{\end@float}
 \makeatother
 
-\title{Supplementary Information for "Social learning spontaneously emerges by searching optimal heuristics with deep reinforcement learning"}
+\title{Supplementary Information for "Working title : Collective Mind"}
 
 %% Notice placement of commas and superscripts and use of &
 %% in the author list
@@ -26,86 +30,88 @@
 
 \maketitle
 
-\section{Learning scheme with fixed environment}
+\section{Pseudocode for Random walk process $R$}
 
-Here, we present the result when instead of providing random NK landscapes at every epoch, only $1$ and $10$ fixed NK landscapes are given to the agent during the training (Fig. S1A). We find that in the case of a single landscape, the model performance quickly converges to the maximum value, $100$. This optimal performance is obtained from finding \textit{the best} solution ($[1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1]$ in this case) and precisely producing this solution regardless of the input (Fig. S1B). This result demonstrates the effectiveness of reinforcement learning as a meta-heuristic, but the agent failed to achieve a general sense of social learning and choose to memorize the answer and stick with it, which is intuitively the best strategy in this particular case. 
+\begin{algorithm}
+  \caption{Random walk process $R$}\label{alg:one}
+  \KwIn{Article $a_{j, t}$, Frequency set of community topic graph $F_{t-1}^{c_k}$, Weight set of community topic graph $W_{t-1}^{c_k}$, community-specific scale factor $N_w^{c_k}$, number of steps for random walker $N_s$, weight modifier $\alpha$}
+  \KwOut{Frequency set of the random walk $F^r$, Weight set of the random walk $W^r$}
 
-Interestingly, we can observe that the agent manages to achieve great performance (over $80$) when $10$ different landscapes are given (Fig. S1A). In this case, we employ $10$ GPU and parallel computing to train the agent. Since the memorization of a single solution would not yield a high average payoff for $10$ different landscapes, we check the model output with the Best-Imitator test (Fig. S1B) The model output seems like it tries to copy the third-best solution, but we perform the same test with different template and find that the model output looks similar regardless of the test template. Note that in this case, many dimensions of the output probabilities have neither $0$ nor $1$, but intermediate values. This implies that the model did not attempt to learn from others or memorize a single solution, but somehow found the probabilistic solution that can achieve good performance for all $10$ environments when iteratively applied to all agents. We test this hypothesis by evaluating the model performance with randomly generated NK landscapes. As we expected, our model shows a good mean payoff for its training landscapes but fails to achieve any meaningful performance for random landscapes. One notable thing is that the increase of mean payoff is not instant; our model's probabilistic solution needs to be iteratively applied in order to achieve its final solution. Although the existence of such a solution is intriguing on its own, the model failed to acquire any social learning skills in this environment. These results imply that the provision of enough different landscapes is vital for motivating agents to learn social skills rather than optimized to fixed environments.
+  $F^r \gets \{f_1^r, \cdots, f_{N}^r |\forall i, f_i^r = 0\}$
+   
+  $W^r \gets \{w_1^r, \cdots, w_{N}^r |\forall i, w_i^r = 0\}$
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1\linewidth]{FigS1}
-  \caption{(A) Average mean payoff when $1$ (blue) and $10$ (red) fixed landscapes are given during the training, instead of randomly initialized landscape at each epoch. (B) Best-imitator test result of the final model from $1$ (left) and $10$ (right) landscapes. (C) Mean payoff and (D) average mean payoff of the final model from $10$ landscapes, evaluated with $10$ random landscapes (black) and $10$ training landscapes (gray).}\label{fig:s1}
-\end{figure}
+  $x_{j, t+1} = \{v_{q_1}^g, v_{q_2}^g, \cdots, v_{q_{N_{v}}}^g\}$ \Comment*[r]{event of the article $a_{j, t+1}$}
 
-\section{Learning scheme with group-averaged reward}
+  $N^r \gets \{n_1^r, \cdots, n_{N_{v}}^r | n_i^r = \lceil N_w^{c_k} \times \frac{f_{q_i,t-1}^{c_k}}{\sum_s f_{q_s,t-1}} \rceil\} $
 
-Here, we present the result when instead of individual payoff, the group-averaged payoff is given as a reward at each timestep during the training. We find that the individual has failed to learn any form of social learning when the group-averaged reward is given (Fig. S1). We speculate that in order to tackle this problem from a group-focused viewpoint, one might need to specialize in the architecture and loss function for controlling the action of the entire group, such as a centralized controller. Note that in that case, the dimensionality of the group action would be enormous ($15\times 100 = 1500$ in our default case) so another form of bypass or remedy would be needed to reduce it effectively.
+  \For{$i \gets 1$ \KwTo $N_{v}$}{
+    $v_{\text{start}}^g \gets v_{q_i}^g$ \Comment*[r]{starting node of the random walk}
 
+    $\bar{W} \gets \texttt{WeightModify}(W_{t-1}^{c_k}, v_{\text{start}}^g, x_{j, t})$
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1\linewidth]{FigS2}
-  \caption{(A) Average mean payoff and (B) entropy of two model output, the model with group-averaged reward and the model with individual reward (default). The bold line shows an exponential moving average with a smoothing factor of $0.99$.}\label{fig:s2}
-\end{figure}
+    \For{$j \gets 1$ \KwTo $n_j^r$}{
+      $v_{\text{current}}^g \gets v_{\text{start}}^g$ \Comment*[r]{starting node of the random walk}
+      $F^r$, $W^r \gets \texttt{RandomWalk}(F^r, W^r, \bar{W}, N_s,v_{\text{current}}^g)$
+    }
+  }
 
-\section{Training results when the frequency feature is not provided}
+  \KwRet{$F^r$, $W^r$}
+  \end{algorithm}
 
-Here, we test the alternative provision of information by removing the frequency feature from the input. In the default settings, we provide $5$ different information of itself and $3$ neighbors to each agent without any structural information: binary solution vector of dimension $N$, payoff, self-indicator, ranking (including itself), and solution frequency (excepting itself). We name this setting as \textbf{PIRF} (\textbf{P}ayoff, \textbf{I}ndicator, \textbf{R}anking, \textbf{F}requency). By removing the solution frequency feature, the setting is then called \textbf{PIR} setting.
+\begin{algorithm}
+    \caption{Weight modifying algorithm \texttt{WeightModify}}\label{alg:two}
+    \KwIn{Weight set of community topic graph $W_{t-1}^{c_k}$, starting node $v_{\text{start}}^g$, event of the article $x_{j, t}$}
+    \KwOut{Modified weight set $\bar{W}$}
 
-We plot the mean average payoff from five trials with different seeds for each setting (Fig. S3). We can observe that the default setting, PIRF advances the timing of the realization of copying compared to the PIR setting. As we explain in the main manuscript, we speculate that the additional information which can lead to performance improvement might boost the learning process by facilitating the acquisition of the concept of copying.
+    $\bar{W} \gets W_{t-1}^{c_k}$ 
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.7\linewidth]{FigS3}
-  \caption{(A) Exponential moving average of average mean payoff from five trials of PIR and PIRF (default) settings (with a smoothing factor of $0.99$). The bold line shows an average of five trials.}\label{fig:s3}
-\end{figure}
+    $V^r \gets$ $ \{ \text{all neighbor topics of } v_{\text{start}}^g \}$
+  
+    \For{$v_i^g \in V^r$}{
+      \uIf{$v_i^g$ \Kwin $x_{j, t}$}{
+        $\bar{w}_{\text{start}, i} \gets (1 + \alpha) w_{\text{start}, i ,t-1}^{c_k}$
+      }
+      \uElse{
+        $\bar{w}_{\text{start}, i} \gets w_{\text{start}, i ,t-1}^{c_k}$
+      }
+    }
 
+    \KwRet{$\bar{W}$}
+\end{algorithm}
 
-\section{Training results when the payoff ranking is not provided}
+  \begin{algorithm}
+    \caption{Individual random walk process \texttt{Randomwalk}}\label{alg:three}
+    \KwIn{Frequency set of the random walk $F^r$, Weight set of the random walk $W^r$, Modified weight set of community topic graph $\bar{W}$, number of random walking steps $N_s$, startig node $v_{\text{current}}^g$}
+    \KwOut{Updated frequency set $F^r$, Updated weight set $W^r$}
+  
+    $ v_{\text{current}}^g \gets v_{q_i}^g$
 
-Here, we test the alternative provision of information by removing payoff ranking (and frequency feature) from the input, which is \textbf{PI} setting. We find that the final model of PI and PIRF is qualitatively similar (not shown), but the PI setting takes much longer training epochs to reach its final model (Fig. S4). We speculate that this slow convergence is because our model tries to learn a total order of all $4$ continuous payoff, which could be quite challenging without tailored architecture and loss function \cite{burges2005learning}. In this case, since we normalize payoff into $[0, 1]$ range, the task would be slightly easier and the model eventually succeeds to learn a well-performing ranking function.
+    \For{$i \gets 1$ \KwTo $N_s$}{
 
+      $V^r \gets$ $ \{ \text{all neighbor topics of } v_{\text{current}}^g \}$
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1\linewidth]{FigS4}
-  \caption{(A) Average mean payoff and (B) entropy of two model output, PI and PIRF (default). The bold line shows an exponential moving average with a smoothing factor of $0.99$.}\label{fig:s4}
-\end{figure}
+      $P \gets \bar{W}$
 
-\section{Training results with more rugged landscape with $K=11$}
+      $S \gets \sum_s p_s$
 
-Here, we present the result from a more rugged environment compared to the default $K=7$ landscape, $K=11$. We find that due to its extreme ruggedness, the agent struggles to realize the very first step of social learning; the concept of copying (Fig. S5A, B). We trained the model for nearly $4,500$ epochs and the model stayed at the initial random strategy. We expect that increasing training epochs will eventually lead to a realization of copying (since we find that the model with a less rugged landscape tends to realize the concept of copying earlier), there are ways to boost this initial stage of learning.
+      \For{$p_i \in P$}{
 
-When training the agent with a complex task, curriculum learning \cite{narvekar2020curriculum} helps the training by scheduling the level of difficulty from small and easy tasks to large and difficult tasks, successively and gradually. We can apply this technique in our problem settings by initially providing a less rugged landscape and then substituting it with a more rugged landscape afterward. We also plot the result with a curriculum learning scheme from three different scheduling; starting from $K=3$ landscape, each scheduler then changed the environment to $K=11$ landscape at $1,000$ (when the agent realizes the concept of copying), $2,500$ (when the agent learns to imitate the best), and $5,500$ epochs (the final model), respectively (Fig.S5A and B). In all three cases, the model successfully learns social learning without any problem, implying that the realization of copying is the sole and hardest barrier to pass. We show that the final model from scheduling of $2500$ epoch shows nearly similar performance compared to the BI-R model (Fig. S5C and D)
+        $p_i \gets \frac{p_i}{S} $  \Comment*[r]{normalizing weights into probability}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1\linewidth]{FigS5}
-  \caption{(A) Average mean payoff and (B) entropy of four model output, $K=11$ without any scheduling ($K11$), and with three different scheduling scheme which changes the landscape from $K=3$ to $K=11$ at epoch $1,000$ ($K3K11 (E1000)$), $2,500$ ($K3K11 (E2500)$), and $5,500$ ($K3K11 (E5500)$). The bold line shows an exponential moving average with a smoothing factor of $0.99$. (C) Mean payoff and (D) Average mean payoff over time of SLS from the final model from $K3K11 (E2500)$ (RL) and various baseline SLSs. Error bars show $\pm$5 standard error of the mean.}\label{fig:s5}
-\end{figure}
+      }
 
+      select one neighboring node $v_{\text{next}}^g \in V^r$ with probability of $P$
 
-\section{Verification with real social networks}
+      $f^r_{\text{next}} \gets f^r_{\text{next}} + 1$
 
-We adopted a network dataset from \cite{ghasemian2020stacking}, which contains $124$ social network structures among a total of $550$ networks. Since the conformist baseline needs at least $3$ neighbors to perform its SLS, we applied $k$-core decomposition to all $124$ networks with $k=3$ and check whether removed nodes are less than $5\%$ from its original network and the decomposed network is still connected. After the decomposition, a total of $88$ networks passed the criteria and we filtered networks with more than $500$ nodes. As a result, $53$ networks satisfied all conditions, and their node numbers range from $39$ to $478$ after the decomposition. We perform the same procedure as the default settings with all $53$ networks. The results are averaged across $20$ repetitions from $5$ different landscapes, hence a total of $100$ repetitions per network per SLS.
+      $w^r_{\text{current}, \text{next}} \gets w^r_{\text{current}, \text{next}} + 1$
 
-We find that similar to the other results, BI-R showed the best performance among the baselines and our model exceeds its performance, but by a small margin in this case (Fig. S6). The higher error bar is due to a smaller number of trials. Note that in this case, we do not individually train the model for each of the $53$ networks, but the default model (environment of complete network with $100$ agents) is used to test all of the results. In the main manuscript, we show that the characteristic such as the level of copying can be different by training environment, and some environment prefers a higher level of copying while other environment does not. We guess that in this case, by averaging all results from $53$ networks, many of the advantages of our model from delicate balancing might be canceled out and result in a small margin compared to the full-copying model (BI-R). We present this result to demonstrate that the final model of our framework is still powerful for $(15,7)$ settings in various forms and sizes of real social networks.
+      $v_{\text{current}}^g \gets v_{\text{next}}^g$ 
+    }
+    \KwRet{$F^r$, $W^r$}
+    \end{algorithm}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1\linewidth]{FigS6}
-  \caption{(A) Mean payoff and (B) Average mean payoff over time of SLS from reinforcement learning (RL) and various baseline SLSs. Error bars show $\pm$5 standard error of the mean.}\label{fig:s6}
-\end{figure}
-
-\section{Movie S1: Strategy transition throughout the training with the default setting}
-Here, the movie shows the transition of the 3D strategy diagram, which spans nearly the entire training sequence (the movie ends at $5,400$ epochs where the final model is from $5,700$ epochs of training.) We can observe that various short-term strategical notions appear during the training (Fig. S7). For instance, during the transition between stage 2 and 3 (epoch $2,700$), the agent starts to copy the second-best strategy in some cases, depicted as green voxels. Considering that the agent during this transition learns a concept of 'copying based on payoff', copying the second-best solution can be regarded as a plausible intermediate strategy to passing by. Also, during the transition between stage 3 and 4 (epoch $3,800$), the agent adopts a different form of individual learning, depicted as red, opaque voxels, before it finally settles down to a total random flipping. Since the red color indicates high similarity with the current solution of the learner itself, this strategy is similar to the ``-P'' (probabilistic) individual learning in the baseline SLS where the agent keeps its original solution but allows some flipping. The agent eventually abandons such form of individual learning at the end of stage 4, since the ``-I'' individual learning shows superior performance compared to the ``-P'' individual learning when combined with BI strategy, as shown in Fig. 3B in the main manuscript. We speculate that the BI strategy goes well with highly exploratory individual learning because 'copying the best' strategy often causes early convergence due to its diversity-reducing nature, and exploration from the individual learning could complement such demerit. These intermediate strategical notions are indeed interesting observations by themselves, and also clearly demonstrate the vast scope of SLSs that our model can express.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=1\linewidth]{FigS7}
-  \caption{3D strategy diagrams from the model with (A) $2,700$ epochs and (B) $3,800$ epochs of training, which are the captures from the supplementary movie S1. The model is trained on a fully connected network of $100$ agents with NK$(15, 7)$ environments.}\label{fig:s7}
-\end{figure}
 
 \section{References}
 \bibliographystyle{naturemag}
@@ -124,22 +130,6 @@ Here, the movie shows the transition of the 3D strategy diagram, which spans nea
     conference on Machine learning}}, \bibinfo{pages}{89--96}
     (\bibinfo{year}{2005}).
   
-  \bibitem{narvekar2020curriculum}
-  \bibinfo{author}{Narvekar, S.} \emph{et~al.}
-  \newblock \bibinfo{title}{Curriculum learning for reinforcement learning
-    domains: A framework and survey}.
-  \newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:2003.04960}}
-    (\bibinfo{year}{2020}).
-  
-  \bibitem{ghasemian2020stacking}
-  \bibinfo{author}{Ghasemian, A.}, \bibinfo{author}{Hosseinmardi, H.},
-    \bibinfo{author}{Galstyan, A.}, \bibinfo{author}{Airoldi, E.~M.} \&
-    \bibinfo{author}{Clauset, A.}
-  \newblock \bibinfo{title}{Stacking models for nearly optimal link prediction in
-    complex networks}.
-  \newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
-    Sciences}} \textbf{\bibinfo{volume}{117}}, \bibinfo{pages}{23393--23400}
-    (\bibinfo{year}{2020}).
   
   \end{thebibliography}
 
