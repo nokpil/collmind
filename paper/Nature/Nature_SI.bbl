@@ -1,0 +1,32 @@
+\begin{thebibliography}{1}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\bibinfo}[2]{#2}
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem{burges2005learning}
+\bibinfo{author}{Burges, C.} \emph{et~al.}
+\newblock \bibinfo{title}{Learning to rank using gradient descent}.
+\newblock In \emph{\bibinfo{booktitle}{Proceedings of the 22nd international
+  conference on Machine learning}}, \bibinfo{pages}{89--96}
+  (\bibinfo{year}{2005}).
+
+\bibitem{narvekar2020curriculum}
+\bibinfo{author}{Narvekar, S.} \emph{et~al.}
+\newblock \bibinfo{title}{Curriculum learning for reinforcement learning
+  domains: A framework and survey}.
+\newblock \emph{\bibinfo{journal}{arXiv preprint arXiv:2003.04960}}
+  (\bibinfo{year}{2020}).
+
+\bibitem{ghasemian2020stacking}
+\bibinfo{author}{Ghasemian, A.}, \bibinfo{author}{Hosseinmardi, H.},
+  \bibinfo{author}{Galstyan, A.}, \bibinfo{author}{Airoldi, E.~M.} \&
+  \bibinfo{author}{Clauset, A.}
+\newblock \bibinfo{title}{Stacking models for nearly optimal link prediction in
+  complex networks}.
+\newblock \emph{\bibinfo{journal}{Proceedings of the National Academy of
+  Sciences}} \textbf{\bibinfo{volume}{117}}, \bibinfo{pages}{23393--23400}
+  (\bibinfo{year}{2020}).
+
+\end{thebibliography}
