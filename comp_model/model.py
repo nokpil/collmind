@@ -847,7 +847,12 @@ if __name__ == '__main__':
     
     seed = int(datetime.now().timestamp()) + int(desc)
     np.random.seed(seed)
+
+    results_dir = join('model_results', folder_name)
     
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+        
     sampling_ratio_list = [0.5, 0.5]
     power_constant_list = [-0.4, -0.2, -0.1]  # twice of [-0.2, -0.1, -0.05] (empirical one), due to the correction from the 2nd filter
 
