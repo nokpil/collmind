@@ -53,7 +53,7 @@ python model.py --model_type {model_type} --topic_num {topic_num} --comm_num {co
 
 * Influence time and strength typically means the start and end of a certain influence, but one may use this to freely control the influence strength at iv_t1 and iv_t2.
 * Simulation results will be stored under `model_results/folder_name`.
-* To use `fixed` settings for init_type, one needs to first construct `fixed_dict.pkl` under `comp_model/data`, which can be done by the code snippet in the [nb_prepreocess.ipynb](nb_preprocess.ipynb)
+* To use `fixed` settings for init_type, one needs to first construct `fixed_dict.pkl` under `comp_model/data`, which can be done by the code snippet in the [nb_prepreocess.ipynb](nb_preprocess.ipynb).
 
 For more detailed usage for each influence simulation, check [intervention.ipynb](comp_model/intervention.ipynb).
 
