@@ -1,6 +1,6 @@
 # Project Title
 
-![Project Image](Fig1.pdf)
+![Project Image](Fig1.png)
 
 ## Description
 A brief description of your project goes here. Explain what it does and why it is useful.
