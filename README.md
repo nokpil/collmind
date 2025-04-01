@@ -4,7 +4,7 @@
 
 ## Description
 This is a repository for the code used in "Dynamics of collective mind in online news communities" (Ha, 2025).
-(Instruction work in process)
+> Collective discourse and behaviors are shaped by the semantic representations of knowledge and beliefs shared by community members. This collective mind is susceptible to a variety of influences, from editorial practices (alignment, amplification, and reframing of news) to community dynamics (turnover, trolls, and counterspeech). It is critical that communities understand the effects of these influences so that they can protect themselves against manipulation and promote constructive discourse and behaviors. However, this understanding has been limited by the inability to conduct counterfactual experiments in the real world and by the inherent difficulty of predicting complex social systems. Here, we develop a computational model of collective minds, calibrated with data from 400 million comments posted on five online news platforms. The model provides a quantitative understanding of the way collective minds evolve in the context of continuously incoming news about outside events. It enables experimentation with different editorial and community influences, providing insights into the magnitude and persistence of their effects. Our results inform communities about the ways their collective mind can be influenced and what they can do to promote and sustain favorable collective dynamics.
 
 ## Installation
 ```sh
