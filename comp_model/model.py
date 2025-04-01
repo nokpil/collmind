@@ -1,4 +1,3 @@
-
 import sys
 import gc
 from argparse import ArgumentParser
@@ -6,26 +5,12 @@ from datetime import datetime
 from copy import deepcopy
 
 import numpy as np
-from numpy.random import rand
-import random
-import scipy.spatial as spatial
 import scipy.stats as stats
 import pandas as pd
 
-import matplotlib.pyplot as plt
-import ipywidgets as widgets
-from ipywidgets import interact, interact_manual
-
-from collections import defaultdict, Counter
-from copy import deepcopy
+from collections import Counter
 import pickle
 from os.path import join
-from tqdm.notebook import tqdm
-import networkx as nx
-import powerlaw
-
-from cProfile import Profile
-from pstats import SortKey, Stats
 
 ## utility functions
 
@@ -907,7 +892,7 @@ if __name__ == '__main__':
     orig_general_frequency = deepcopy(system.general.frequency)
     orig_general_weight = deepcopy(system.general.weight)
     
-    for t in tqdm(range(timestep)):
+    for t in range(timestep):
         print(t, datetime.now())
         
         if IV_dict['iv_type'][0] == '0':  # IV_0, world event
