@@ -9,13 +9,13 @@ This is a repository for the code used in "Dynamics of collective mind in online
 ## Installation
 ```sh
 # Clone the repository
-git clone https://github.com/yourusername/yourrepository.git
+git clone https://github.com/nokpil/collmind.git
 
 # Navigate into the project directory
-cd yourrepository
+cd collmind
 
 # Install dependencies (if applicable)
-npm install  # or pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Usage
