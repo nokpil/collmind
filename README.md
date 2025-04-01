@@ -20,32 +20,42 @@ pip install -r requirements.txt
 
 ## Usage
 ### Computational model
-For given parameters, the simplest form of
+Move to the 'comp_model' directory and run the following code.
 ```sh
 python model.py --model_type {model_type} --topic_num {topic_num} --comm_num {comm_num} --event_num 1000 --event_topic_num 3 --filter_strength {filter_strength} --memory_strength {memory_strength} --timestep {timestep} --iv_rank {iv_rank} --init_type {init_type} --init_freq_std {init_freq_std} --folder {folder} --store_events {store_events} --store_extra {store_extra} --store_weight {store_weight} --store_corr {store_corr} --store_tmp {store_tmp} --desc {desc}
 ```
 | Parameter            | Description                                      |
 |----------------------|--------------------------------------------------|
-| `--model_type`       | Type of the model (e.g., `A`, `B`, `C`)         |
-| `--topic_num`        | Number of topics in the model                   |
-| `--comm_num`         | Number of communities in the model              |
+| `--model_type`       | Type of the model (keep this to 'simple')         |
+| `--topic_num`        | Number of topics in the model (default: `200`)                   |
+| `--comm_num`         | Number of communities in the model (default: `5`)             |
 | `--event_num`        | Number of total events (default: `1000`)        |
 | `--event_topic_num`  | Number of topics per event (default: `3`)       |
-| `--filter_strength`  | Strength of the filtering mechanism             |
-| `--memory_strength`  | Memory retention strength                       |
+| `--filter_strength`  | Strength of the filtering mechanism (`$0 \geq \lambda_m$`)             |
+| `--memory_strength`  | Memory retention strength  (`$0 \geq \lambda_m<1$`)                     |
 | `--timestep`         | Number of timesteps in simulation               |
-| `--iv_rank`          | Rank of initial values                          |
-| `--init_type`        | Initialization method                           |
-| `--init_freq_std`    | Standard deviation of initialization frequency  |
-| `--folder`           | Folder to store results                         |
+| `--iv_type`          | Influence type (1: Alignment, 2:Amplification, 3: Reframing, 4: Membership turnover, 5: Trolls, 6: Counterspeech)|
+| `--iv_t1`          | Influence time (1)                         |
+| `--iv_s1`          | Influence strength (1)                          |
+| `--iv_t2`          | Influence time (2)                          |
+| `--iv_s2`          | Influence strength (2)                          |
+| `--iv_rank`          | Influence rank                        |
+| `--iv_tier`          | Influence tier                         |
+| `--init_type`        | Initialization method (`plain`, `perturb`, `fixed`)                           |
+| `--init_freq_std`    | Standard deviation of initialization frequency (default: `0.0`) |
+| `--init_weight_std`        |Standard deviation of initialization weight (default: `0.0`)  |
+| `--folder_name`           | Subfolder name to store results                     |
 | `--store_events`     | Whether to store event logs (`True` / `False`)  |
 | `--store_extra`      | Whether to store extra data (`True` / `False`)  |
 | `--store_weight`     | Whether to store weight data (`True` / `False`) |
 | `--store_corr`       | Whether to store correlation data (`True` / `False`) |
-| `--store_tmp`        | Whether to store temporary files (`True` / `False`) |
 | `--desc`             | Short description of the experiment             |
 
-For detailed usage for each influence simulation, check [intervention.ipynb](comp_model/intervention.ipynb).
+* Influence time and strength typically means the start and end of a certain influence, but one may use this to freely control the influence strength at iv_t1 and iv_t2.
+* Simulation results will be stored under `model_results/folder_name`.
+* To use `fixed` settings for init_type, one needs to first construct `fixed_dict.pkl` under `comp_model/data`, which can be done by the code snippet in the [nb_prepreocess.ipynb](nb_preprocess.ipynb)
+
+For more detailed usage for each influence simulation, check [intervention.ipynb](comp_model/intervention.ipynb).
 
 ### Data preprocessing
 TBD
