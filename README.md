@@ -19,10 +19,36 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+### Computational model
+For given parameters, the simplest form of
 ```sh
-# Example usage command
-python main.py  # or npm start
+python model.py --model_type {model_type} --topic_num {topic_num} --comm_num {comm_num} --event_num 1000 --event_topic_num 3 --filter_strength {filter_strength} --memory_strength {memory_strength} --timestep {timestep} --iv_rank {iv_rank} --init_type {init_type} --init_freq_std {init_freq_std} --folder {folder} --store_events {store_events} --store_extra {store_extra} --store_weight {store_weight} --store_corr {store_corr} --store_tmp {store_tmp} --desc {desc}
 ```
+| Parameter            | Description                                      |
+|----------------------|--------------------------------------------------|
+| `--model_type`       | Type of the model (e.g., `A`, `B`, `C`)         |
+| `--topic_num`        | Number of topics in the model                   |
+| `--comm_num`         | Number of communities in the model              |
+| `--event_num`        | Number of total events (default: `1000`)        |
+| `--event_topic_num`  | Number of topics per event (default: `3`)       |
+| `--filter_strength`  | Strength of the filtering mechanism             |
+| `--memory_strength`  | Memory retention strength                       |
+| `--timestep`         | Number of timesteps in simulation               |
+| `--iv_rank`          | Rank of initial values                          |
+| `--init_type`        | Initialization method                           |
+| `--init_freq_std`    | Standard deviation of initialization frequency  |
+| `--folder`           | Folder to store results                         |
+| `--store_events`     | Whether to store event logs (`True` / `False`)  |
+| `--store_extra`      | Whether to store extra data (`True` / `False`)  |
+| `--store_weight`     | Whether to store weight data (`True` / `False`) |
+| `--store_corr`       | Whether to store correlation data (`True` / `False`) |
+| `--store_tmp`        | Whether to store temporary files (`True` / `False`) |
+| `--desc`             | Short description of the experiment             |
+
+For detailed usage for each influence simulation, check [intervention.ipynb](comp_model/intervention.ipynb).
+
+### Data preprocessing
+TBD
 
 ## Contributing
 If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are welcome.
