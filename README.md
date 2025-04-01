@@ -3,9 +3,8 @@
 ![Project Image](Fig1.png)
 
 ## Description
-This is a repository for the code used in "Dynamics of collective mind in online news communities" (Ha, 2025). 
-
-The 
+This is a repository for the code used in "Dynamics of collective mind in online news communities" (Ha, 2025).
+(Instruction work in process)
 
 ## Installation
 ```sh
@@ -26,10 +25,10 @@ python main.py  # or npm start
 ```
 
 ## Contributing
-If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are welcome!
+If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are welcome.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
 
 ## Contact
 For any inquiries, please contact seungwoong.ha@santafe.edu or create an issue.
