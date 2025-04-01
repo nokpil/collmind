@@ -1,9 +1,11 @@
-# Project Title
+# Dynamics of collective mind in online news communities
 
 ![Project Image](Fig1.png)
 
 ## Description
-A brief description of your project goes here. Explain what it does and why it is useful.
+This is a repository for the code used in "Dynamics of collective mind in online news communities" (Ha, 2025). 
+
+The 
 
 ## Installation
 ```sh
@@ -30,4 +32,4 @@ If you'd like to contribute, please fork the repository and use a feature branch
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
-For any inquiries, please contact [your email] or visit [your website].
+For any inquiries, please contact seungwoong.ha@santafe.edu or create an issue.
