@@ -18,6 +18,10 @@ cd collmind
 pip install -r requirements.txt
 ```
 
+## Empirical data 
+
+We gathered our empirical data (article titles and comments from Mother Jones, Atlantic, The Hill, Breitbart, and Gatewaypundit) through the official API from [Disqus](https://disqus.com/api/docs/).
+
 ## Usage
 ### Computational model
 Move to the 'comp_model' directory and run the following code.
