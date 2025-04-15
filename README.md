@@ -27,7 +27,7 @@ bertopic (>=0.16.4)
 powerlaw (>=1.5)
 ```
 
-## Installation]
+## Installation
 Ideally, upon downloading the repository, the dependency installation will be completed in less than an hour (mainly due to Torch). 
 You may remove the GPU-related dependencies (nvidia) if you don't use GPU-accelerated Bertopic.
 ```sh
