@@ -2,9 +2,28 @@
 
 ![Project Image](Fig1.png)
 
-## Description
+# Description
 This is a repository for the code used in "Dynamics of collective mind in online news communities" (Ha, 2025).
 > Collective discourse and behaviors are shaped by the semantic representations of knowledge and beliefs shared by community members. This collective mind is susceptible to a variety of influences, from editorial practices (alignment, amplification, and reframing of news) to community dynamics (turnover, trolls, and counterspeech). It is critical that communities understand the effects of these influences so that they can protect themselves against manipulation and promote constructive discourse and behaviors. However, this understanding has been limited by the inability to conduct counterfactual experiments in the real world and by the inherent difficulty of predicting complex social systems. Here, we develop a computational model of collective minds, calibrated with data from 400 million comments posted on five online news platforms. The model provides a quantitative understanding of the way collective minds evolve in the context of continuously incoming news about outside events. It enables experimentation with different editorial and community influences, providing insights into the magnitude and persistence of their effects. Our results inform communities about the ways their collective mind can be influenced and what they can do to promote and sustain favorable collective dynamics.
+
+# System Requirements
+
+## Software requirements
+### OS Requirements
+The package should work identically for all OS, as long as the Python environments are constructed in the same way. The package has been tested on the Linux (Ubuntu 20.04) environment. 
+
+### Python Dependencies
+Our package mainly depends on Python and the Python scientific stack. We're also employing [BERTOPIC](https://maartengr.github.io/BERTopic/index.html) and [powerlaw](https://github.com/jeffalstott/powerlaw) packages.
+The following are the requirements and dependencies for Python 3.12, although Python 3.8 and any version of the libraries that are compatible with Python 3.8 would not change the outcome.
+
+```
+numpy (>=2.1.3)
+scipy (>=1.15.2)
+scikit-learn (>=1.6.1)
+pandas (>=2.2.3)
+bertopic (>=0.16.4)
+powerlaw (>=1.5)
+```
 
 ## Installation
 ```sh
@@ -18,12 +37,12 @@ cd collmind
 pip install -r requirements.txt
 ```
 
-## Empirical data 
+# Empirical data 
 
 We gathered our empirical data (article titles and comments from Mother Jones, Atlantic, The Hill, Breitbart, and Gatewaypundit) through the official API from [Disqus](https://disqus.com/api/docs/).
 
-## Usage
-### Computational model
+# Usage
+## Computational model
 Move to the 'comp_model' directory and run the following code.
 ```sh
 python model.py --model_type {model_type} --topic_num {topic_num} --comm_num {comm_num} --event_num 1000 --event_topic_num 3 --filter_strength {filter_strength} --memory_strength {memory_strength} --timestep {timestep} --iv_rank {iv_rank} --init_type {init_type} --init_freq_std {init_freq_std} --folder {folder} --store_events {store_events} --store_extra {store_extra} --store_weight {store_weight} --store_corr {store_corr} --store_tmp {store_tmp} --desc {desc}
@@ -61,14 +80,14 @@ python model.py --model_type {model_type} --topic_num {topic_num} --comm_num {co
 
 For more detailed usage for each influence simulation, check [intervention.ipynb](comp_model/intervention.ipynb).
 
-### Data preprocessing
+## Data preprocessing
 TBD
 
-## Contributing
+# Contributing
 If you'd like to contribute, please fork the repository and use a feature branch. Pull requests are welcome.
 
-## License
+# License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
 
-## Contact
+# Contact
 For any inquiries, please contact seungwoong.ha@santafe.edu or create an issue.
